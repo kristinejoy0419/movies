@@ -7,7 +7,8 @@
 //   for                     - which profiles this can be suggested to: jordan, tegan, kristine, date
 //   note                    - short heads-up for parents (kid picks only)
 //
-// Rule for anything tagged jordan/tegan: NO sexual content or sexual innuendo.
+// Rule for anything tagged jordan/tegan: NO sexual content or sexual innuendo,
+// and NO suicide or self-harm.
 // Violence, gore and scares are fine (house rule from Kristine).
 
 window.CATALOG = [
@@ -41,10 +42,7 @@ window.CATALOG = [
   { title: "Annabelle: Creation", year: 2017, rating: "R", tags: ["horror", "creepy-dolls", "ghost", "demons"], for: ["tegan"], note: "Very intense, scary doll. No sexual content." },
   { title: "Scary Stories to Tell in the Dark", year: 2019, rating: "PG-13", tags: ["horror", "creepy-kids-book", "monster", "curse", "kids-on-bikes"], for: ["tegan", "jordan"], note: "Creature scares, some gore." },
   { title: "Poltergeist", year: 1982, rating: "PG", tags: ["horror", "ghost", "haunted-house", "creepy-dolls"], for: ["tegan", "jordan"], note: "The clown doll scene! Parents briefly smoke pot." },
-  { title: "The Others", year: 2001, rating: "PG-13", tags: ["horror", "ghost", "haunted-house", "mystery"], for: ["tegan"], note: "Slow, atmospheric ghost story. No gore." },
   { title: "Insidious", year: 2010, rating: "PG-13", tags: ["horror", "ghost", "demons", "haunted-house"], for: ["tegan"], note: "Lots of jump scares." },
-  { title: "Mama", year: 2013, rating: "PG-13", tags: ["horror", "ghost", "creepy-kids"], for: ["tegan"], note: "Scary ghost, some violence." },
-  { title: "Lights Out", year: 2016, rating: "PG-13", tags: ["horror", "ghost"], for: ["tegan"], note: "Short and punchy jump scares." },
   { title: "The Mummy", year: 2026, rating: "R", tags: ["horror", "mummy", "curse", "demons", "creepy-kids"], for: [] },
   { title: "The Mummy Returns", year: 2001, rating: "PG-13", tags: ["action", "adventure", "horror", "mummy", "curse", "monster"], for: ["tegan", "jordan"], note: "Same vibe as The Mummy." },
   { title: "The Watcher in the Woods", year: 1980, rating: "PG", tags: ["horror", "ghost", "mystery", "disney"], for: ["tegan"], note: "Old-school Disney spooky." },
@@ -66,7 +64,6 @@ window.CATALOG = [
   { title: "Spider-Man: Across the Spider-Verse", year: 2023, rating: "PG", tags: ["action", "animation", "superhero"], for: ["jordan"], note: "Action violence, cliffhanger ending." },
   { title: "The Mitchells vs. the Machines", year: 2021, rating: "PG", tags: ["action", "animation", "comedy", "sci-fi", "robots", "netflix"], for: ["jordan", "tegan"], note: "Netflix. Robot apocalypse, very funny." },
   { title: "The Sea Beast", year: 2022, rating: "PG", tags: ["action", "adventure", "animation", "monster", "netflix"], for: ["jordan", "tegan"], note: "Netflix. Sea monsters, action peril." },
-  { title: "Nimona", year: 2023, rating: "PG", tags: ["action", "animation", "fantasy", "netflix"], for: ["jordan"], note: "Netflix. Action, some peril." },
   { title: "Big Hero 6", year: 2014, rating: "PG", tags: ["action", "animation", "superhero", "robots", "disney"], for: ["jordan"], note: "Disney. A sad loss early on." },
   { title: "The Incredibles", year: 2004, rating: "PG", tags: ["action", "animation", "superhero", "disney"], for: ["jordan"], note: "Disney/Pixar. Action violence." },
   { title: "Incredibles 2", year: 2018, rating: "PG", tags: ["action", "animation", "superhero", "disney"], for: ["jordan"], note: "Disney/Pixar. Flashing-light scenes." },
@@ -79,7 +76,6 @@ window.CATALOG = [
   { title: "Jurassic Park", year: 1993, rating: "PG-13", tags: ["action", "adventure", "sci-fi", "dinosaurs", "creatures", "survival"], for: ["jordan", "tegan"], note: "Scary dino attacks." },
   { title: "Jurassic World Rebirth", year: 2025, rating: "PG-13", tags: ["action", "adventure", "sci-fi", "dinosaurs", "creatures", "survival"], for: ["jordan"], note: "Dino violence, some gore." },
   { title: "Godzilla x Kong: The New Empire", year: 2024, rating: "PG-13", tags: ["action", "sci-fi", "monster", "creatures"], for: ["jordan"], note: "Giant monster brawls." },
-  { title: "Godzilla Minus One", year: 2023, rating: "PG-13", tags: ["action", "drama", "monster", "creatures"], for: ["jordan"], note: "Subtitled (or dubbed). Intense destruction." },
   { title: "Super 8", year: 2011, rating: "PG-13", tags: ["sci-fi", "horror", "aliens", "kids-on-bikes", "creatures", "mystery"], for: ["jordan"], note: "Stranger Things before Stranger Things. Some language." },
   { title: "War of the Worlds", year: 2005, rating: "PG-13", tags: ["action", "sci-fi", "aliens", "survival", "thriller"], for: ["jordan"], note: "Intense alien attacks." },
   { title: "Real Steel", year: 2011, rating: "PG-13", tags: ["action", "sci-fi", "robots", "sports"], for: ["jordan"], note: "Robot boxing, some language." },
@@ -122,6 +118,12 @@ window.CATALOG = [
 // Kid-friendly-looking titles we skip on purpose because of sexual content or innuendo.
 // Shown in the Gremlins section so nobody wonders why they're missing.
 window.SKIPPED_FOR_KIDS = [
+  { title: "The Others", year: 2001, why: "The twist involves suicide." },
+  { title: "Mama", year: 2013, why: "Suicide in the backstory and the ending." },
+  { title: "Lights Out", year: 2016, why: "A parent dies by suicide." },
+  { title: "Nimona", year: 2023, why: "A scene widely read as a suicide attempt." },
+  { title: "Godzilla Minus One", year: 2023, why: "Built around a suicide-mission storyline." },
+  { title: "Buddy", year: 2025, why: "Skipped at Kristine's request." },
   { title: "Hocus Pocus", year: 1993, why: "Running virgin jokes and innuendo." },
   { title: "Beetlejuice", year: 1988, why: "Beetlejuice gropes and propositions characters." },
   { title: "Ghostbusters", year: 1984, why: "A sexual dream scene and innuendo." },

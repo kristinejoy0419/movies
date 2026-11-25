@@ -147,14 +147,17 @@ window.TMDB = (() => {
       .replace(/^Peacock Premium.*$/i, "Peacock").replace(/^HBO Max$/i, "Max");
   }
 
-  // Kids: any rating is fine, but nothing with sexual content. TMDB has no content
+  // Kids: any rating is fine, but nothing with sexual content, suicide or self-harm. TMDB has no content
   // descriptors, so we skip romance and anything whose TMDB keywords mention sex/nudity.
   const SEXUAL = /\b(sex|sexual|sexuality|sexy|nudity|nude|naked|erotic|erotica|seduc\w*|prostitut\w*|stripper|strip club|brothel|adultery|affair|infidelity|lust|orgy|threesome|one[- ]night stand|virgin\w*|lingerie|softcore|incest|rape|escort|gigolo|porn\w*|bdsm|fetish|swinger\w*)\b/i;
   const ROMANCE = 10749;
   const clean = new Map();
+  // Also no suicide or self-harm for the kids.
+  const SELF_HARM = /\b(suicid\w*|self[- ]?harm|self[- ]?mutilation|cutting|overdose|hanging|jumping to death|kamikaze)\b/i;
+  const KID_BLOCKED_TITLES = new Set(["buddy"]);
   async function isKidSafe(id) {
     if (!clean.has(id)) {
-      clean.set(id, get(`/movie/${id}/keywords`).then((d) => !(d.keywords || []).some((k) => SEXUAL.test(k.name))).catch(() => false));
+      clean.set(id, get(`/movie/${id}/keywords`).then((d) => !(d.keywords || []).some((k) => SEXUAL.test(k.name) || SELF_HARM.test(k.name))).catch(() => false));
     }
     return clean.get(id);
   }
@@ -177,7 +180,7 @@ window.TMDB = (() => {
     });
     const results = list(await get("/discover/movie", params));
     if (!kids) return results;
-    const ok = await Promise.all(results.map((m) => isKidSafe(m.tmdbId)));
+    const ok = await Promise.all(results.map((m) => !KID_BLOCKED_TITLES.has(m.title.toLowerCase()) && isKidSafe(m.tmdbId)));
     return results.filter((_, i) => ok[i]);
   }
 
