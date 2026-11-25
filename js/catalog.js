@@ -133,7 +133,7 @@ window.SKIPPED_FOR_KIDS = [
 // The kids' starting watch history, from Kristine's notes.
 window.SEED_WATCHED = {
   jordan: ["Jumanji: Welcome to the Jungle", "Jumanji", "Five Nights at Freddy's", "Five Nights at Freddy's 2", "A Quiet Place", "The Simpsons Movie", "Stranger Things"],
-  tegan: ["Coraline", "The Witches", "Child's Play", "The Ring", "The Mummy"],
+  tegan: ["Coraline", "The Witches", "Child's Play", "The Ring", "The Mummy", "Child's Play 2", "Annabelle: Creation"],
   kristine: [],
   date: [],
 };
