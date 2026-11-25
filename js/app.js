@@ -286,7 +286,7 @@
 
   function panelHtml(profileId) {
     const p = PROFILES[profileId];
-    const picks = suggestions(profileId).slice(0, 12);
+    const picks = suggestions(profileId).slice(0, 24);
     const members = p.combo || [profileId];
     const addForm = `<form class="add-watched" data-profile="${profileId}">
         <input name="title" list="catalog-titles" placeholder="${p.combo ? "Something they both watched…" : "Add a movie or show you've watched…"}" autocomplete="off" required>
@@ -304,7 +304,7 @@
           </details>
         </div>`;
     const tmdbRow = !p.kid && TMDB.hasKey() && state.watched[profileId].some((w) => w.tmdbId && isYay(w))
-      ? `<h4 class="row-title">More like your recent watches</h4><div class="grid" id="tmdb-recs-${profileId}"><p class="empty">Loading…</p></div>` : "";
+      ? `<h4 class="row-title">More like your recent watches</h4><div class="grid scroller" id="tmdb-recs-${profileId}"><p class="empty">Loading…</p></div>` : "";
     return `
       <div class="panel-head">
         <div class="avatar">${p.icon ? `<img src="${p.icon}" alt="">` : p.emoji}</div>
@@ -314,7 +314,7 @@
       ${watchedBlock}
       <h4 class="row-title">Suggestions</h4>
       ${learnedHtml(profileId)}
-      <div class="grid">${picks.length ? picks.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen everything on the list! Add more to <code>js/catalog.js</code>.</p>`}</div>
+      <div class="grid scroller">${picks.length ? picks.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen everything on the list! Add more to <code>js/catalog.js</code>.</p>`}</div>
       ${tmdbRow}`;
   }
 
