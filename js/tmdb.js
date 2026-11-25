@@ -207,6 +207,7 @@ window.TMDB = (() => {
   // New-season news for shows you liked: a season premiering within a month (a reminder), or one that just started.
   // shows: [{title, year, tmdbId}] -> [{...show, poster, seasonNote, soon}]
   async function seasonNews(shows, { aheadDays = 31, backDays = 30 } = {}) {
+    // Every liked show with where its next season stands. hot = premieres within a month or just started.
     const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.slice(0, 4) === today().slice(0, 4) ? undefined : "numeric" });
     const out = await Promise.all(shows.map(async (sh) => {
       try {
@@ -216,22 +217,23 @@ window.TMDB = (() => {
         const base = { title: d.name || sh.title, year: Number((d.first_air_date || "").slice(0, 4)) || sh.year, kind: "series", mediaType: "tv", tmdbId: id,
           poster: d.poster_path ? IMG + "w342" + d.poster_path : "" };
         const next = d.next_episode_to_air, last = d.last_episode_to_air, now = today();
-        if (next && next.air_date && next.episode_number === 1 && next.air_date >= now && next.air_date <= isoDaysAgo(-aheadDays)) {
-          return { ...base, soon: true, sort: next.air_date, seasonNote: `Season ${next.season_number} premieres ${fmt(next.air_date)}` };
-        }
-        // Season just started: its first episode aired in the last few weeks.
+        const seasons = (d.seasons || []).filter((x) => x.season_number > 0);
+        // Next season premiere: from the next episode, or a listed season dated in the future.
+        let prem = next && next.episode_number === 1 && next.air_date ? { n: next.season_number, date: next.air_date } : null;
+        if (!prem) { const f = seasons.find((x) => x.air_date && x.air_date > now); if (f) prem = { n: f.season_number, date: f.air_date }; }
+        if (prem && prem.date <= isoDaysAgo(-aheadDays)) return { ...base, hot: true, tier: 0, sort: prem.date, seasonNote: `Season ${prem.n} premieres ${fmt(prem.date)}` };
         const cur = next || last;
         if (cur && cur.season_number > 1) {
-          const season = (d.seasons || []).find((x) => x.season_number === cur.season_number);
+          const season = seasons.find((x) => x.season_number === cur.season_number);
           const start = season && season.air_date;
-          if (start && start <= now && start >= isoDaysAgo(backDays)) {
-            return { ...base, soon: false, sort: start, seasonNote: `Season ${cur.season_number} is out now` };
-          }
+          if (start && start <= now && start >= isoDaysAgo(backDays)) return { ...base, hot: true, tier: 0, sort: start, seasonNote: `Season ${cur.season_number} is out now` };
         }
-        return null;
+        if (prem) return { ...base, hot: false, tier: 1, sort: prem.date, seasonNote: `Season ${prem.n} premieres ${fmt(prem.date)}` };
+        if (/ended|canceled/i.test(d.status || "")) return null; // no more seasons coming
+        return { ...base, hot: false, tier: 2, sort: "", seasonNote: "Next season: no date yet" };
       } catch (e) { return null; }
     }));
-    return out.filter(Boolean).sort((a, b) => (a.soon === b.soon ? a.sort.localeCompare(b.sort) : a.soon ? 1 : -1));
+    return out.filter(Boolean).sort((a, b) => a.tier - b.tier || a.sort.localeCompare(b.sort));
   }
 
   // In theaters now, optionally only certain genres.
