@@ -112,3 +112,40 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
   .section-head h2 { font-size: 26px; }
   nav a { padding: 6px 8px; font-size: 13px; }
 }
+
+/* ---------- Yay / Nay ---------- */
+.btn.yay { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.nay { background: transparent; border-color: #c2564a; color: #ff9b8f; }
+.actions { align-items: center; }
+.actions-label { width: 100%; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.linklike.skip { width: 100%; text-align: left; font-size: 12px; color: var(--muted); }
+.add-watched .btn { flex: none; }
+.votes { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 10px; }
+.vote-head { font-weight: 600; font-size: 13px; color: var(--muted); }
+.chip.is-nay { background: #3a1f1d; }
+.chip .flip { font-size: 13px; padding: 0 2px; }
+.chips .empty { font-size: 13px; list-style: none; }
+@media (max-width: 560px) {
+  .votes { grid-template-columns: 1fr; }
+  .add-watched { flex-wrap: wrap; }
+  .add-watched input { flex-basis: 100%; }
+}
+.add-label { font-weight: 600; font-size: 13px; margin-bottom: 6px; }
+.watched-list { margin-top: 10px; }
+.watched-list summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+.gremlins-title { display: flex; align-items: center; gap: 10px; }
+.gremlin-icon { width: 64px; height: auto; filter: drop-shadow(0 3px 8px rgb(92 201 138 / .35)); }
+.tab-icon { width: 22px; height: auto; vertical-align: -5px; }
+.avatar img { width: 44px; height: auto; }
+
+/* ---------- NEW! sticker ---------- */
+.poster-wrap { position: relative; }
+.new-sticker {
+  position: absolute; top: -8px; right: -6px; transform: rotate(10deg);
+  background: #ffd23f; color: #1a1300; font: 800 13px/1 Inter, sans-serif; letter-spacing: .03em;
+  padding: 7px 9px; border-radius: 999px; border: 2px solid #111113;
+  box-shadow: 0 3px 10px rgb(0 0 0 / .45);
+}
+.grid.scroller { padding-top: 10px; }
+.new-title::before { content: "🆕 "; }
+.setup-inline { color: var(--muted); font-size: 13px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); padding: 10px 14px; margin: 4px 0 12px; }

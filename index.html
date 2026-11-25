@@ -15,8 +15,7 @@
     <div class="wrap top-inner">
       <h1>🍿 Movie Night</h1>
       <nav>
-        <a href="#gremlins">Gremlins</a>
-        <a href="#new-now">New now</a>
+        <a href="#gremlins"><img src="img/gremlin.svg" alt="" class="tab-icon"> Gremlins</a>
         <a href="#kristine">Kristine</a>
         <a href="#date-night">Date Night</a>
         <button id="open-settings" class="btn small ghost" aria-label="Settings">⚙︎ Settings</button>
@@ -27,11 +26,11 @@
   <main class="wrap">
     <section id="gremlins" class="section gremlins">
       <div class="section-head">
-        <h2>Gremlins</h2>
+        <h2 class="gremlins-title"><img src="img/gremlin.svg" alt="" class="gremlin-icon"> Gremlins</h2>
         <p>Picks for the kids. Scary and action are fine; anything with sexual content is left out.</p>
       </div>
       <div class="subtabs" role="tablist">
-        <button class="subtab" role="tab" data-kid="both" aria-selected="true">👾 Both</button>
+        <button class="subtab" role="tab" data-kid="both" aria-selected="true"><img src="img/gremlin.svg" alt="" class="tab-icon"> Both</button>
         <button class="subtab" role="tab" data-kid="jordan" aria-selected="false">🦖 Jordan</button>
         <button class="subtab" role="tab" data-kid="tegan" aria-selected="false">🧟 Tegan</button>
       </div>
@@ -43,14 +42,6 @@
         <p>These look kid-friendly but have sexual content or innuendo, so they never show up here.</p>
         <ul id="skipped"></ul>
       </details>
-    </section>
-
-    <section id="new-now" class="section">
-      <div class="section-head">
-        <h2>New now</h2>
-        <p>What's in theaters and what just hit streaming.</p>
-      </div>
-      <div id="new-now-body"></div>
     </section>
 
     <section id="kristine" class="section">

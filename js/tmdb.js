@@ -29,6 +29,20 @@ window.TMDB = (() => {
   ];
 
   let key = "";
+  // Poster from Wikipedia, used when there's no TMDB key yet.
+  async function wikiPoster(title, year, kind) {
+    const url = new URL("https://en.wikipedia.org/w/api.php");
+    const q = `${title} ${year || ""} ${kind === "series" ? "TV series" : "film"}`;
+    Object.entries({
+      action: "query", format: "json", origin: "*", generator: "search", gsrsearch: q, gsrlimit: "1",
+      prop: "pageimages", piprop: "thumbnail", pithumbsize: "342", pilicense: "any",
+    }).forEach(([k, v]) => url.searchParams.set(k, v));
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Wikipedia ${res.status}`);
+    const pages = Object.values((await res.json()).query?.pages || {});
+    return (pages[0] && pages[0].thumbnail && pages[0].thumbnail.source) || "";
+  }
+
   const setKey = (k) => { key = (k || "").trim(); };
   const hasKey = () => !!key;
 
@@ -122,6 +136,7 @@ window.TMDB = (() => {
       providerIds: (wp.flatrate || []).map((p) => p.provider_id),
       rentBuy: !!((wp.rent && wp.rent.length) || (wp.buy && wp.buy.length)),
       link: wp.link || "",
+      date: d.release_date || d.first_air_date || "",
       fetched: Date.now(),
     };
   }
@@ -132,8 +147,34 @@ window.TMDB = (() => {
       .replace(/^Peacock Premium.*$/i, "Peacock").replace(/^HBO Max$/i, "Max");
   }
 
+  // New releases filtered by genre. kids=true limits to G/PG.
+  async function newByGenre({ genres = [], kids = false, services = null } = {}) {
+    const params = {
+      "primary_release_date.gte": isoDaysAgo(120),
+      "primary_release_date.lte": today(),
+      sort_by: "popularity.desc",
+      include_adult: "false",
+      "vote_count.gte": 3,
+      with_genres: genres.join("|"),
+    };
+    if (kids) Object.assign(params, { certification_country: REGION, "certification.lte": "PG" });
+    if (services) Object.assign(params, {
+      watch_region: REGION,
+      with_watch_monetization_types: "flatrate",
+      with_watch_providers: (services.length ? services : SERVICES.map((s) => s.id)).join("|"),
+    });
+    return list(await get("/discover/movie", params));
+  }
+
+  // In theaters now, optionally only certain genres.
+  async function inTheaters(genres) {
+    const data = await get("/movie/now_playing", { region: REGION });
+    const keep = genres && genres.length ? new Set(genres) : null;
+    return data.results.filter((r) => !r.adult && (!keep || (r.genre_ids || []).some((g) => keep.has(g)))).map(normalize);
+  }
+
   const recommendations = async (tmdbId, mediaType = "movie") =>
     list(await get(`/${mediaType}/${tmdbId}/recommendations`));
 
-  return { setKey, hasKey, find, details, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
+  return { wikiPoster, setKey, hasKey, find, details, newByGenre, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
 })();
