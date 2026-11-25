@@ -204,6 +204,36 @@ window.TMDB = (() => {
     return list(await get("/discover/tv", params)).map((m) => ({ ...m, kind: "series" }));
   }
 
+  // New-season news for shows you liked: a season premiering within a month (a reminder), or one that just started.
+  // shows: [{title, year, tmdbId}] -> [{...show, poster, seasonNote, soon}]
+  async function seasonNews(shows, { aheadDays = 31, backDays = 30 } = {}) {
+    const fmt = (d) => new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric", year: d.slice(0, 4) === today().slice(0, 4) ? undefined : "numeric" });
+    const out = await Promise.all(shows.map(async (sh) => {
+      try {
+        const id = sh.tmdbId || (await find(sh.title, sh.year, "series") || {}).tmdbId;
+        if (!id) return null;
+        const d = await get(`/tv/${id}`);
+        const base = { title: d.name || sh.title, year: Number((d.first_air_date || "").slice(0, 4)) || sh.year, kind: "series", mediaType: "tv", tmdbId: id,
+          poster: d.poster_path ? IMG + "w342" + d.poster_path : "" };
+        const next = d.next_episode_to_air, last = d.last_episode_to_air, now = today();
+        if (next && next.air_date && next.episode_number === 1 && next.air_date >= now && next.air_date <= isoDaysAgo(-aheadDays)) {
+          return { ...base, soon: true, sort: next.air_date, seasonNote: `Season ${next.season_number} premieres ${fmt(next.air_date)}` };
+        }
+        // Season just started: its first episode aired in the last few weeks.
+        const cur = next || last;
+        if (cur && cur.season_number > 1) {
+          const season = (d.seasons || []).find((x) => x.season_number === cur.season_number);
+          const start = season && season.air_date;
+          if (start && start <= now && start >= isoDaysAgo(backDays)) {
+            return { ...base, soon: false, sort: start, seasonNote: `Season ${cur.season_number} is out now` };
+          }
+        }
+        return null;
+      } catch (e) { return null; }
+    }));
+    return out.filter(Boolean).sort((a, b) => (a.soon === b.soon ? a.sort.localeCompare(b.sort) : a.soon ? 1 : -1));
+  }
+
   // In theaters now, optionally only certain genres.
   async function inTheaters(genres) {
     const data = await get("/movie/now_playing", { region: REGION });
@@ -214,5 +244,5 @@ window.TMDB = (() => {
   const recommendations = async (tmdbId, mediaType = "movie") =>
     list(await get(`/${mediaType}/${tmdbId}/recommendations`));
 
-  return { wikiPoster, setKey, hasKey, find, details, newByGenre, newTv, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
+  return { wikiPoster, setKey, hasKey, find, details, newByGenre, newTv, seasonNews, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
 })();

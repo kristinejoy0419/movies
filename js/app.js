@@ -273,6 +273,7 @@
         <h4>${esc(m.title)}</h4>
         ${infoLine(m, info, opts)}
         ${whereHtml(m, info, opts)}
+        ${m.seasonNote ? `<div class="season-note">🔔 ${esc(m.seasonNote)}</div>` : ""}
         ${m.because ? `<div class="because">Because you watched <b>${esc(m.because.title)}</b></div>` : ""}
         ${m.note ? `<div class="note">${esc(m.note)}</div>` : ""}
         ${m.overview ? `<div class="note overview">${esc(m.overview)}</div>` : ""}
@@ -337,6 +338,7 @@
         <div class="avatar">${p.icon ? `<img src="${p.icon}" alt="">` : p.emoji}</div>
         <div><h3>${esc(p.name)}${p.age ? ` <small>age ${p.age}</small>` : ""}</h3><p class="blurb">${esc(p.blurb)}</p>${profileId === "both" ? `<p class="synopsis">${bothSynopsis()}</p>` : ""}</div>
       </div>
+      <div id="seasons-${profileId}" class="seasons" hidden></div>
       ${newRowsHtml(profileId)}
       ${watchedBlock}
       <h4 class="row-title">${p.kid ? "Suggestions" : "Movie suggestions"}</h4>
@@ -351,6 +353,23 @@
     if (!TMDB.hasKey()) return `<p class="setup-inline">🆕 Want to see what's new in theaters and on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`;
     return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}${r.note ? ` <small>(${esc(r.note)}. Still check the parents' guide)</small>` : ""}</h4>
       <div class="grid scroller" id="new-${profileId}-${i}"><p class="empty">Loading…</p></div>`).join("");
+  }
+
+  // New seasons of shows this profile rated Yay: coming soon, or just started.
+  async function loadSeasonNews(profileId) {
+    if (!TMDB.hasKey()) return;
+    const box = document.getElementById(`seasons-${profileId}`);
+    const seen = new Set();
+    const shows = (PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || [])
+      .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
+      .filter((w) => { const k = w.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
+    if (!box || !shows.length) return;
+    const items = await TMDB.seasonNews(shows);
+    if (!box.isConnected || !items.length) return;
+    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
+      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
+    box.hidden = false;
+    fillPosters(box);
   }
 
   async function loadNewRows(profileId) {
@@ -382,6 +401,7 @@
     el.innerHTML = panelHtml(profileId);
     fillPosters(el);
     loadNewRows(profileId);
+    loadSeasonNews(profileId);
     if (!PROFILES[profileId].kid) loadTmdbRecs(profileId);
   }
 

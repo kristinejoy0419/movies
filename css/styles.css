@@ -188,3 +188,6 @@ nav .tab-icon { width: 22px; height: 22px; vertical-align: -6px; }
   nav { gap: 0; }
   nav a { padding: 6px 6px; }
 }
+
+/* New-season callouts */
+.season-note { font-size: 12px; font-weight: 700; color: #ffd23f; }
