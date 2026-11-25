@@ -8,7 +8,7 @@
 //   note                    - short heads-up for parents (kid picks only)
 //
 // Rule for anything tagged jordan/tegan: NO sexual content or sexual innuendo,
-// and NO suicide or self-harm.
+// NO suicide or self-harm, and nothing that spoils Santa.
 // Violence, gore and scares are fine (house rule from Kristine).
 
 window.CATALOG = [
@@ -50,8 +50,6 @@ window.CATALOG = [
   { title: "Over the Garden Wall", year: 2014, rating: "TV-PG", kind: "series", tags: ["animation", "dark-fantasy", "creatures", "cartoon"], for: ["tegan"], note: "10 short episodes, perfect fall watch." },
 
   // ---------- Gremlins: both kids ----------
-  { title: "Gremlins", year: 1984, rating: "PG", tags: ["horror", "comedy", "creatures", "monster", "holiday", "80s"], for: ["tegan", "jordan"], note: "The namesake! Some creature violence." },
-  { title: "Gremlins 2: The New Batch", year: 1990, rating: "PG-13", tags: ["horror", "comedy", "creatures", "monster"], for: ["tegan", "jordan"], note: "Sillier than the first." },
   { title: "Ghostbusters: Afterlife", year: 2021, rating: "PG-13", tags: ["action", "comedy", "ghost", "kids-on-bikes", "sci-fi"], for: ["tegan", "jordan"], note: "Fine for kids. (The 1984 original is skipped, see below.)" },
   { title: "A Quiet Place Part II", year: 2021, rating: "PG-13", tags: ["horror", "survival", "aliens", "creatures", "thriller"], for: ["jordan", "tegan"], note: "Creature violence, tense." },
   { title: "A Quiet Place: Day One", year: 2024, rating: "PG-13", tags: ["horror", "survival", "aliens", "creatures", "thriller"], for: ["jordan", "tegan"], note: "Creature violence, sad ending." },
@@ -118,6 +116,8 @@ window.CATALOG = [
 // Kid-friendly-looking titles we skip on purpose because of sexual content or innuendo.
 // Shown in the Gremlins section so nobody wonders why they're missing.
 window.SKIPPED_FOR_KIDS = [
+  { title: "Gremlins", year: 1984, why: "Sexual content, and a character says there's no Santa." },
+  { title: "Gremlins 2: The New Batch", year: 1990, why: "Innuendo, same as the first." },
   { title: "The Others", year: 2001, why: "The twist involves suicide." },
   { title: "Mama", year: 2013, why: "Suicide in the backstory and the ending." },
   { title: "Lights Out", year: 2016, why: "A parent dies by suicide." },

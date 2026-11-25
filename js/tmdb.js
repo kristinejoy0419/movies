@@ -152,8 +152,8 @@ window.TMDB = (() => {
   const SEXUAL = /\b(sex|sexual|sexuality|sexy|nudity|nude|naked|erotic|erotica|seduc\w*|prostitut\w*|stripper|strip club|brothel|adultery|affair|infidelity|lust|orgy|threesome|one[- ]night stand|virgin\w*|lingerie|softcore|incest|rape|escort|gigolo|porn\w*|bdsm|fetish|swinger\w*)\b/i;
   const ROMANCE = 10749;
   const clean = new Map();
-  // Also no suicide or self-harm for the kids.
-  const SELF_HARM = /\b(suicid\w*|self[- ]?harm|self[- ]?mutilation|cutting|overdose|hanging|jumping to death|kamikaze)\b/i;
+  // Also no suicide, self-harm or Santa spoilers for the kids.
+  const SELF_HARM = /\b(santa claus myth|no santa|santa (is|isn't) real|suicid\w*|self[- ]?harm|self[- ]?mutilation|cutting|overdose|hanging|jumping to death|kamikaze)\b/i;
   const KID_BLOCKED_TITLES = new Set(["buddy"]);
   async function isKidSafe(id) {
     if (!clean.has(id)) {
