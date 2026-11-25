@@ -6,8 +6,8 @@
     jordan: { name: "Jordan", age: 9, emoji: "🦖", blurb: "Action, Disney, Netflix, video-game horror", likes: ["action", "disney", "netflix", "video-game"], kid: true },
     tegan: { name: "Tegan", age: 7, emoji: "🧟", blurb: "Horror, creepy dolls, spooky stop-motion", likes: ["horror", "creepy-dolls"], kid: true },
     both: { name: "Both kids", icon: "img/gremlin.png", blurb: "Picks that work for Jordan and Tegan together", kid: true, combo: ["jordan", "tegan"] },
-    kristine: { name: "Kristine", emoji: "🍿", blurb: "Just for you", likes: [] },
-    date: { name: "Date Night", emoji: "🥂", blurb: "Kristine and Daniel", likes: [] },
+    kristine: { name: "Kristine", icon: "img/kristine.svg", blurb: "Just for you", likes: [] },
+    date: { name: "Date Night", icon: "img/date-night.svg", blurb: "Kristine and Daniel", likes: [] },
   };
 
   // "New" rows shown at the top of each tab (need a TMDB key). Genre ids are TMDB's.
