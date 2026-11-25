@@ -3,4 +3,6 @@
 // (read-only, free), but you can leave this blank and paste it in Settings instead.
 window.MOVIE_NIGHT_CONFIG = {
   tmdbKey: "05c21c901cbcd23748cb4bfcba56dffc",
+  // Shared ratings for every device (free Pantry basket at getpantry.cloud).
+  syncUrl: "https://getpantry.cloud/apiv1/pantry/de1ec3bc-ba90-45c6-975b-2235b0b94178/basket/movienight",
 };

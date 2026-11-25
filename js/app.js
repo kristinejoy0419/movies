@@ -103,24 +103,32 @@
   }
   let pushTimer = null, syncReady = false;
   function queuePush() {
-    if (!syncReady || !window.MovieSync) return;
+    if (!syncReady || !window.MovieSync || !MovieSync.enabled()) return;
     clearTimeout(pushTimer);
-    pushTimer = setTimeout(() => MovieSync.push(syncable()).then(() => setSyncStatus("ok")).catch(() => setSyncStatus("err")), 800);
+    pushTimer = setTimeout(() => MovieSync.push(syncable()).then(() => setSyncStatus("ok"))
+      .catch(() => { setSyncStatus("err"); clearTimeout(pushTimer); pushTimer = setTimeout(queuePush, 10000); }), 1200);
   }
   let syncStatus = "off";
   function setSyncStatus(s) { syncStatus = s; const el = document.getElementById("sync-status"); if (el) el.textContent = syncLabel(); }
   const syncLabel = () => ({ off: "Not synced yet", ok: "On: ratings sync across your devices", err: "Couldn't reach the sync service. Ratings are still saved on this device." }[syncStatus]);
   async function syncNow() {
-    if (!window.MovieSync) return;
+    if (!window.MovieSync || !MovieSync.enabled()) return;
     try {
       const remote = await MovieSync.pull();
       const changed = mergeRemote(remote);
       syncReady = true;
-      await MovieSync.push(syncable());
+      const pick = (o) => o && JSON.stringify({ w: o.watched, h: o.hidden, r: o.removed || {}, s: o.services });
+      if (pick(remote) !== pick(syncable())) await MovieSync.push(syncable()); // only write when something's new
       setSyncStatus("ok");
       if (changed) renderAll();
-    } catch (e) { syncReady = true; setSyncStatus("err"); }
+    } catch (e) {
+      // Never push before a successful read, or this device could overwrite everyone else's ratings.
+      setSyncStatus("err");
+      clearTimeout(retryTimer);
+      retryTimer = setTimeout(syncNow, 15000);
+    }
   }
+  let retryTimer = null;
   let state = load();
   TMDB.setKey(state.tmdbKey);
 
@@ -641,7 +649,6 @@
     $("#services").innerHTML = TMDB.SERVICES.map((s) =>
       `<label class="check"><input type="checkbox" value="${s.id}" ${state.services.includes(s.id) ? "checked" : ""}> ${s.name}</label>`).join("");
     const st = $("#sync-status"); if (st) st.textContent = syncLabel();
-    const ln = $("#sync-link"); if (ln) ln.value = window.MovieSync ? MovieSync.link() : "";
     dlg.showModal();
   }
   $("#open-settings").addEventListener("click", openSettings);
