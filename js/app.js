@@ -40,7 +40,11 @@
   function load() {
     try {
       const s = JSON.parse(localStorage.getItem(STORE));
-      if (s && s.watched) return { ...defaultState(), ...s };
+      if (s && s.watched) {
+        const merged = { ...defaultState(), ...s };
+        if (!merged.tmdbKey) merged.tmdbKey = (window.MOVIE_NIGHT_CONFIG || {}).tmdbKey || ""; // built-in key fills in
+        return merged;
+      }
     } catch (e) { /* storage blocked or empty */ }
     return defaultState();
   }
