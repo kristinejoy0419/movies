@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Movie Night</title>
+  <meta name="description" content="Movie suggestions for the Gremlins, Kristine, and Date Night.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍿</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="wrap top-inner">
+      <h1>🍿 Movie Night</h1>
+      <nav>
+        <a href="#gremlins"><img src="img/gremlin.png" alt="" class="tab-icon"> Gremlins</a>
+        <a href="#kristine">Kristine</a>
+        <a href="#date-night">Date Night</a>
+        <button id="open-settings" class="btn small ghost" aria-label="Settings">⚙︎ Settings</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section id="gremlins" class="section gremlins">
+      <div class="subtabs" role="tablist">
+        <button class="subtab" role="tab" data-kid="both" aria-selected="true"><img src="img/gremlin.png" alt="" class="tab-icon"> Both</button>
+        <button class="subtab" role="tab" data-kid="jordan" aria-selected="false">🦖 Jordan</button>
+        <button class="subtab" role="tab" data-kid="tegan" aria-selected="false">🧟 Tegan</button>
+      </div>
+      <div id="panel-both" class="panel kid-panel"></div>
+      <div id="panel-jordan" class="panel kid-panel" hidden></div>
+      <div id="panel-tegan" class="panel kid-panel" hidden></div>
+      <details class="skipped-box">
+        <summary>Left out on purpose</summary>
+        <p>These look kid-friendly but have sexual content or innuendo, so they never show up here.</p>
+        <ul id="skipped"></ul>
+      </details>
+    </section>
+
+    <section id="kristine" class="section">
+      <div class="section-head"><h2>Kristine</h2></div>
+      <div id="panel-kristine" class="panel"></div>
+    </section>
+
+    <section id="date-night" class="section">
+      <div class="section-head"><h2>Date Night</h2></div>
+      <div id="panel-date" class="panel"></div>
+    </section>
+  </main>
+
+  <footer class="wrap foot">
+    Watch history is saved in this browser. Movie data and posters from
+    <a href="https://www.themoviedb.org/" target="_blank" rel="noopener">TMDB</a> when connected.
+  </footer>
+
+  <datalist id="catalog-titles"></datalist>
+
+  <dialog id="settings">
+    <form id="settings-form" method="dialog">
+      <h3>Settings</h3>
+      <label class="field">TMDB API key or read access token
+        <input id="tmdb-key" type="password" autocomplete="off" placeholder="Paste key here">
+      </label>
+      <p class="hint">Free from <a href="https://www.themoviedb.org/settings/api" target="_blank" rel="noopener">themoviedb.org</a>. Turns on New now, posters, and smarter matching for titles you type in. Stored only in this browser.</p>
+      <fieldset>
+        <legend>Streaming services you have</legend>
+        <div id="services" class="services"></div>
+      </fieldset>
+      <div class="dialog-actions">
+        <button id="reset" type="button" class="btn small ghost danger">Reset history</button>
+        <span class="spacer"></span>
+        <button value="cancel" class="btn small ghost">Cancel</button>
+        <button value="save" class="btn small">Save</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="js/config.js"></script>
+  <script src="js/catalog.js"></script>
+  <script src="js/tmdb.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
