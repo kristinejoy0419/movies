@@ -154,3 +154,5 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .tab-icon { width: 26px; height: 26px; object-fit: cover; border-radius: 50%; background: #fff; vertical-align: -7px; }
 .avatar img[src$="gremlin.png"] { width: 56px; height: 56px; object-fit: cover; border-radius: 50%; background: #fff; }
 .gremlins { padding-top: 24px; }
+.learned { color: var(--muted); font-size: 13px; margin: -4px 0 14px; }
+.learned b { color: var(--accent); font-weight: 600; }

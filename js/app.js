@@ -63,15 +63,39 @@
   // Tags on a YAY add weight, tags on a NAY take weight away, and the profile's
   // "likes" add a little more. A movie's score is how well its tags fit.
   const VOTE_WEIGHT = { yay: 1, nay: -1.25 };
+  // Newer votes count up to 50% more, so tastes can change over time.
+  // "Not interested" teaches a little too (half a Nay).
   function tagWeights(profileId) {
     const p = PROFILES[profileId];
     const w = {};
-    for (const m of state.watched[profileId] || []) {
-      const v = VOTE_WEIGHT[m.vote] ?? 0.5;
-      for (const t of m.tags || []) w[t] = (w[t] || 0) + v;
+    const add = (tags, v) => { for (const t of tags || []) w[t] = (w[t] || 0) + v; };
+    const list = state.watched[profileId] || [];
+    list.forEach((m, i) => {
+      const recency = 1 + 0.5 * (list.length > 1 ? i / (list.length - 1) : 1);
+      add(m.tags, (VOTE_WEIGHT[m.vote] ?? 0.5) * recency);
+    });
+    for (const k of state.hidden[profileId] || []) {
+      const m = window.CATALOG.find((c) => keyOf(c) === k) || (state.hiddenTags || {})[k];
+      if (m) add(m.tags, VOTE_WEIGHT.nay / 2);
     }
     for (const t of p.likes || []) w[t] = (w[t] || 0) + 1.5;
     return w;
+  }
+
+  // Plain-English summary of what the picks have learned, shown in each tab.
+  const TAG_LABEL = (t) => t.replace(/-/g, " ").replace("sci fi", "sci-fi");
+  function learnedHtml(profileId) {
+    const members = PROFILES[profileId].combo || [profileId];
+    const votes = members.reduce((n, pid) => n + state.watched[pid].length + (state.hidden[pid] || []).length, 0);
+    if (!votes) return "";
+    const w = {};
+    for (const pid of members) for (const [t, v] of Object.entries(tagWeights(pid))) w[t] = (w[t] || 0) + v;
+    const sorted = Object.entries(w).sort((a, b) => b[1] - a[1]);
+    const likes = sorted.filter(([, v]) => v > 0.75).slice(0, 5).map(([t]) => TAG_LABEL(t));
+    const nos = sorted.filter(([, v]) => v < -0.5).reverse().slice(0, 4).map(([t]) => TAG_LABEL(t));
+    if (!likes.length && !nos.length) return "";
+    return `<p class="learned">🧠 Learned from ${votes} rating${votes === 1 ? "" : "s"}:
+      ${likes.length ? `more <b>${likes.join(", ")}</b>` : ""}${likes.length && nos.length ? "; " : ""}${nos.length ? `less <b>${nos.join(", ")}</b>` : ""}.</p>`;
   }
 
   function scoreFor(profileId, movie) {
@@ -240,6 +264,7 @@
       ${newRowsHtml(profileId)}
       ${watchedBlock}
       <h4 class="row-title">Suggestions</h4>
+      ${learnedHtml(profileId)}
       <div class="grid">${picks.length ? picks.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen everything on the list! Add more to <code>js/catalog.js</code>.</p>`}</div>
       ${tmdbRow}`;
   }
@@ -257,7 +282,13 @@
     NEW_ROWS[profileId].forEach(async (row, i) => {
       const box = document.getElementById(`new-${profileId}-${i}`);
       try {
-        const items = (await row.fn()).filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m))).slice(0, 14);
+        const members = PROFILES[profileId].combo || [profileId];
+        const items = (await row.fn())
+          .filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m)))
+          .map((m, i) => ({ m, i, score: members.reduce((s, pid) => s + scoreFor(pid, m), 0) }))
+          .sort((a, b) => b.score - a.score || a.i - b.i)
+          .map(({ m }) => m)
+          .slice(0, 14);
         if (!box.isConnected) return;
         box.innerHTML = items.length
           ? items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: row.context })).join("")
@@ -379,7 +410,10 @@
       w.vote = isYay(w) ? "nay" : "yay";
       save(); renderAffected([profile]);
     } else if (act === "hide") {
-      state.hidden[profile].push(key); save(); renderPanel(profile);
+      for (const pid of new Set([profile, ...(PROFILES[profile].combo || [])])) state.hidden[pid].push(key);
+      const c = cardRegistry.get((b.closest("[data-card]") || {}).dataset?.card);
+      if (c && !catalogItem(key)) (state.hiddenTags = state.hiddenTags || {})[key] = { tags: c.m.tags || [] };
+      save(); renderAffected([profile]);
     } else if (act === "unwatch") {
       state.watched[profile].splice(Number(b.dataset.i), 1); save(); renderAffected([profile]);
     } else if (act === "settings") {
