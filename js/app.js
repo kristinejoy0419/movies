@@ -267,7 +267,7 @@
     const info = infoFor(m);
     const id = `c${++cardSeq}`;
     cardRegistry.set(id, { m, profileId, opts });
-    return `<article class="card" data-card="${id}">
+    return `<article class="card" data-card="${id}" data-title="${esc(normTitle(m.title))}">
       ${posterHtml(m, info)}
       <div class="card-body">
         <h4>${esc(m.title)}</h4>
@@ -447,7 +447,20 @@
     return inflight.get(k);
   }
 
+  // Each title shows once per tab: the first row it lands in (top of the page) keeps it.
+  const normTitle = (t) => String(t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  function dedupePanel(panel) {
+    if (!panel) return;
+    const seen = new Set();
+    panel.querySelectorAll(".card[data-title]").forEach((c) => {
+      const k = c.dataset.title;
+      c.hidden = seen.has(k);
+      seen.add(k);
+    });
+  }
+
   async function fillPosters(root) {
+    dedupePanel(root.closest ? (root.closest(".panel") || root) : root);
     const live = TMDB.hasKey();
     const queue = [...root.querySelectorAll("[data-card]")].filter((el) => {
       const c = cardRegistry.get(el.dataset.card);
@@ -462,7 +475,7 @@
         const el = queue.shift();
         const c = cardRegistry.get(el.dataset.card);
         try { await lookupFn(c.m); } catch (e) { queue.length = 0; return; }
-        if (el.isConnected) el.outerHTML = card(c.m, c.profileId, c.opts);
+        if (el.isConnected) { const hid = el.hidden; el.outerHTML = card(c.m, c.profileId, c.opts); if (hid) { const n = root.querySelector(`[data-card="c${cardSeq}"]`); if (n) n.hidden = true; } }
         cardRegistry.delete(el.dataset.card);
         clearTimeout(saveTimer); saveTimer = setTimeout(save, 500);
       }
