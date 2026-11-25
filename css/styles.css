@@ -149,3 +149,8 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .grid.scroller { padding-top: 10px; }
 .new-title::before { content: "🆕 "; }
 .setup-inline { color: var(--muted); font-size: 13px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); padding: 10px 14px; margin: 4px 0 12px; }
+
+/* Gremlin photo icon has a white background, so show it in a white circle. */
+.tab-icon { width: 26px; height: 26px; object-fit: cover; border-radius: 50%; background: #fff; vertical-align: -7px; }
+.avatar img[src$="gremlin.png"] { width: 56px; height: 56px; object-fit: cover; border-radius: 50%; background: #fff; }
+.gremlins { padding-top: 24px; }

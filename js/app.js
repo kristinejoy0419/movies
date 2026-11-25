@@ -5,7 +5,7 @@
   const PROFILES = {
     jordan: { name: "Jordan", age: 9, emoji: "🦖", blurb: "Action, Disney, Netflix, video-game horror", likes: ["action", "disney", "netflix", "video-game"], kid: true },
     tegan: { name: "Tegan", age: 7, emoji: "🧟", blurb: "Horror, creepy dolls, spooky stop-motion", likes: ["horror", "creepy-dolls"], kid: true },
-    both: { name: "Both kids", icon: "img/gremlin.svg", blurb: "Picks that work for Jordan and Tegan together", kid: true, combo: ["jordan", "tegan"] },
+    both: { name: "Both kids", icon: "img/gremlin.png", blurb: "Picks that work for Jordan and Tegan together", kid: true, combo: ["jordan", "tegan"] },
     kristine: { name: "Kristine", emoji: "🍿", blurb: "Just for you", likes: [] },
     date: { name: "Date Night", emoji: "🥂", blurb: "Kristine and Daniel", likes: [] },
   };
