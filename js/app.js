@@ -13,9 +13,9 @@
   // "New" rows shown at the top of each tab (need a TMDB key). Genre ids are TMDB's.
   const G = { action: 28, adventure: 12, animation: 16, comedy: 35, family: 10751, fantasy: 14, horror: 27, mystery: 9648, romance: 10749, scifi: 878, thriller: 53, drama: 18 };
   const NEW_ROWS = {
-    both: [{ title: "New for the Gremlins", note: "G or PG only", fn: () => TMDB.newByGenre({ kids: true }) }],
-    jordan: [{ title: "New for Jordan", note: "G or PG only", fn: () => TMDB.newByGenre({ kids: true, genres: [G.action, G.adventure, G.animation, G.scifi, G.fantasy] }) }],
-    tegan: [{ title: "New for Tegan", note: "G or PG only", fn: () => TMDB.newByGenre({ kids: true, genres: [G.horror, G.fantasy, G.mystery, G.animation] }) }],
+    both: [{ title: "New for the Gremlins", note: "any rating, screened for sexual content", fn: () => TMDB.newByGenre({ kids: true }) }],
+    jordan: [{ title: "New for Jordan", note: "any rating, screened for sexual content", fn: () => TMDB.newByGenre({ kids: true, genres: [G.action, G.adventure, G.animation, G.scifi, G.fantasy] }) }],
+    tegan: [{ title: "New for Tegan", note: "any rating, screened for sexual content", fn: () => TMDB.newByGenre({ kids: true, genres: [G.horror, G.fantasy, G.mystery, G.animation] }) }],
     kristine: [
       { title: "New in theaters", context: "theaters", fn: () => TMDB.inTheaters() },
       { title: "New on streaming", fn: () => TMDB.newByGenre({ services: state.services }) },
@@ -246,7 +246,7 @@
 
   function newRowsHtml(profileId) {
     if (!TMDB.hasKey()) return `<p class="setup-inline">🆕 Want to see what's new in theaters and on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`;
-    return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}${r.note ? ` <small>(${esc(r.note)}, still check the parents' guide)</small>` : ""}</h4>
+    return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}${r.note ? ` <small>(${esc(r.note)}. Still check the parents' guide)</small>` : ""}</h4>
       <div class="grid scroller" id="new-${profileId}-${i}"><p class="empty">Loading…</p></div>`).join("");
   }
 

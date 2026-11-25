@@ -4,7 +4,7 @@ A small static site that suggests movies for our house, based on what we've watc
 
 - **Gremlins** (the kids, main use): separate tabs for **Jordan** (9, action), **Tegan** (7, horror) and **Both**. Scary and gory is fine; anything with sexual content or innuendo is left out (see "Left out on purpose" on the page).
 - **Kristine** and **Date Night**: their own watch history and suggestions.
-- Each tab opens with a **New** row (new G/PG releases for the kids; in theaters and new on your streaming services for the grown-ups). Anything released in the last 45 days gets a **NEW!** sticker.
+- Each tab opens with a **New** row (new releases for the kids, any rating but screened for sexual content; in theaters and new on your streaming services for the grown-ups). Anything released in the last 45 days gets a **NEW!** sticker.
 
 Every card shows the poster, rating (G/PG/PG-13/R or TV rating), TMDB score, and which streaming services have it, with your own services highlighted. Without a TMDB key, posters come from Wikipedia.
 

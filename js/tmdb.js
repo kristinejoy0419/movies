@@ -147,7 +147,19 @@ window.TMDB = (() => {
       .replace(/^Peacock Premium.*$/i, "Peacock").replace(/^HBO Max$/i, "Max");
   }
 
-  // New releases filtered by genre. kids=true limits to G/PG.
+  // Kids: any rating is fine, but nothing with sexual content. TMDB has no content
+  // descriptors, so we skip romance and anything whose TMDB keywords mention sex/nudity.
+  const SEXUAL = /\b(sex|sexual|sexuality|sexy|nudity|nude|naked|erotic|erotica|seduc\w*|prostitut\w*|stripper|strip club|brothel|adultery|affair|infidelity|lust|orgy|threesome|one[- ]night stand|virgin\w*|lingerie|softcore|incest|rape|escort|gigolo|porn\w*|bdsm|fetish|swinger\w*)\b/i;
+  const ROMANCE = 10749;
+  const clean = new Map();
+  async function isKidSafe(id) {
+    if (!clean.has(id)) {
+      clean.set(id, get(`/movie/${id}/keywords`).then((d) => !(d.keywords || []).some((k) => SEXUAL.test(k.name))).catch(() => false));
+    }
+    return clean.get(id);
+  }
+
+  // New releases filtered by genre. kids=true screens out sexual content (any rating).
   async function newByGenre({ genres = [], kids = false, services = null } = {}) {
     const params = {
       "primary_release_date.gte": isoDaysAgo(120),
@@ -157,13 +169,16 @@ window.TMDB = (() => {
       "vote_count.gte": 3,
       with_genres: genres.join("|"),
     };
-    if (kids) Object.assign(params, { certification_country: REGION, "certification.lte": "PG" });
+    if (kids) params.without_genres = String(ROMANCE);
     if (services) Object.assign(params, {
       watch_region: REGION,
       with_watch_monetization_types: "flatrate",
       with_watch_providers: (services.length ? services : SERVICES.map((s) => s.id)).join("|"),
     });
-    return list(await get("/discover/movie", params));
+    const results = list(await get("/discover/movie", params));
+    if (!kids) return results;
+    const ok = await Promise.all(results.map((m) => isKidSafe(m.tmdbId)));
+    return results.filter((_, i) => ok[i]);
   }
 
   // In theaters now, optionally only certain genres.
