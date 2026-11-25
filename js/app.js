@@ -351,7 +351,7 @@
 
   function newRowsHtml(profileId) {
     if (!TMDB.hasKey()) return `<p class="setup-inline">🆕 Want to see what's new in theaters and on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`;
-    return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}${r.note ? ` <small>(${esc(r.note)}. Still check the parents' guide)</small>` : ""}</h4>
+    return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}</h4>
       <div class="grid scroller" id="new-${profileId}-${i}"><p class="empty">Loading…</p></div>`).join("");
   }
 
