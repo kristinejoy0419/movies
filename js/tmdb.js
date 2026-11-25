@@ -154,7 +154,7 @@ window.TMDB = (() => {
   const clean = new Map();
   // Also no suicide, self-harm or Santa spoilers for the kids.
   const SELF_HARM = /\b(santa claus myth|no santa|santa (is|isn't) real|suicid\w*|self[- ]?harm|self[- ]?mutilation|cutting|overdose|hanging|jumping to death|kamikaze)\b/i;
-  const KID_BLOCKED_TITLES = new Set(["buddy"]);
+  const KID_BLOCKED_TITLES = new Set(["buddy", "godzilla minus zero"]); // Minus Zero: sequel to Minus One (kamikaze / suicide themes)
   async function isKidSafe(id) {
     if (!clean.has(id)) {
       clean.set(id, get(`/movie/${id}/keywords`).then((d) => !(d.keywords || []).some((k) => SEXUAL.test(k.name) || SELF_HARM.test(k.name))).catch(() => false));
