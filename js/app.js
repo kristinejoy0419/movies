@@ -139,6 +139,19 @@
     return raw / Math.sqrt(movie.tags.length || 1);
   }
 
+  // Live TMDB lists: keep only movies that fit this profile's taste, best first.
+  // Until someone has rated anything there's nothing to go on, so we show a few popular ones.
+  const MIN_FIT = 0.6;
+  function tasteFilter(profileId, items, limit = 14) {
+    const members = PROFILES[profileId].combo || [profileId];
+    const trained = members.some((pid) => (state.watched[pid] || []).length || (state.hidden[pid] || []).length);
+    const scored = items
+      .map((m, i) => ({ m, i, score: members.reduce((s, pid) => s + scoreFor(pid, m), 0) / members.length }))
+      .sort((a, b) => b.score - a.score || a.i - b.i);
+    if (!trained) return { items: scored.slice(0, 6).map((x) => x.m), trained };
+    return { items: scored.filter((x) => x.score >= MIN_FIT).slice(0, limit).map((x) => ({ ...x.m, because: x.m.because || becauseOf(members, x.m) })), trained };
+  }
+
   function becauseOf(profileIds, movie) {
     let best = null, bestN = 1;
     for (const pid of profileIds) for (const w of (state.watched[pid] || []).filter(isYay)) {
@@ -317,17 +330,13 @@
     NEW_ROWS[profileId].forEach(async (row, i) => {
       const box = document.getElementById(`new-${profileId}-${i}`);
       try {
-        const members = PROFILES[profileId].combo || [profileId];
-        const items = (await row.fn())
-          .filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m)))
-          .map((m, i) => ({ m, i, score: members.reduce((s, pid) => s + scoreFor(pid, m), 0) }))
-          .sort((a, b) => b.score - a.score || a.i - b.i)
-          .map(({ m }) => m)
-          .slice(0, 14);
+        const { items, trained } = tasteFilter(profileId,
+          (await row.fn()).filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m))));
         if (!box.isConnected) return;
-        box.innerHTML = items.length
-          ? items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: row.context })).join("")
-          : `<p class="empty">Nothing new right now.</p>`;
+        box.innerHTML = (trained ? "" : `<p class="empty untrained">These are just popular for now. Rate a few movies with 👍/👎 and this row will only show ones that fit.</p>`)
+          + (items.length
+            ? items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: row.context })).join("")
+            : `<p class="empty">Nothing new that fits right now. Check back soon.</p>`);
         fillPosters(box);
       } catch (e) {
         box.innerHTML = `<p class="empty">Couldn't load (${esc(e.message)}). Check your key in Settings.</p>`;
@@ -417,11 +426,12 @@
     try {
       const lists = await Promise.all(recent.map((w) => TMDB.recommendations(w.tmdbId, w.mediaType).then((rs) => rs.map((r) => ({ ...r, because: w })))));
       const out = [], used = new Set();
-      for (let i = 0; out.length < 8 && i < 20; i++) for (const l of lists) {
+      for (let i = 0; i < 20; i++) for (const l of lists) {
         const r = l[i];
-        if (r && !used.has(r.title) && !seen.has(r.title.toLowerCase())) { used.add(r.title); out.push(r); }
+        if (r && !used.has(r.title) && !seen.has(r.title.toLowerCase()) && !(state.hidden[profileId] || []).includes(keyOf(r))) { used.add(r.title); out.push(r); }
       }
-      box.innerHTML = out.length ? out.map((m) => card({ ...m, overview: "" }, profileId, { hide: false })).join("") : `<p class="empty">No extra picks found.</p>`;
+      out.splice(0, out.length, ...tasteFilter(profileId, out, 8).items);
+      box.innerHTML = out.length ? out.map((m) => card({ ...m, overview: "" }, profileId, { hide: false })).join("") : `<p class="empty">Nothing else that fits right now.</p>`;
       fillPosters(box);
     } catch (e) {
       box.innerHTML = `<p class="empty">Couldn't reach TMDB (${esc(e.message)}).</p>`;
