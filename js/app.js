@@ -428,13 +428,11 @@
       .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
       .filter((w) => { const k = w.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
     if (!box || !shows.length) return; // only shows up once you've liked a show
-    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4><div class="grid scroller"><p class="empty">Checking…</p></div>`;
-    box.hidden = false;
     const items = await TMDB.seasonNews(shows);
-    if (!box.isConnected) return;
-    box.querySelector(".grid").innerHTML = items.length
-      ? items.map((m) => card(m, profileId, { actions: false })).join("")
-      : `<p class="empty">No new seasons announced for the shows you liked.</p>`;
+    if (!box.isConnected || !items.length) return; // only when a season has a release date
+    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
+      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
+    box.hidden = false;
     fillPosters(box);
   }
 

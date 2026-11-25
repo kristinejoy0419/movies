@@ -229,8 +229,7 @@ window.TMDB = (() => {
           if (start && start <= now && start >= isoDaysAgo(backDays)) return { ...base, hot: true, tier: 0, sort: start, seasonNote: `Season ${cur.season_number} is out now` };
         }
         if (prem) return { ...base, hot: false, tier: 1, sort: prem.date, seasonNote: `Season ${prem.n} premieres ${fmt(prem.date)}` };
-        if (/ended|canceled/i.test(d.status || "")) return null; // no more seasons coming
-        return { ...base, hot: false, tier: 2, sort: "", seasonNote: "Next season: no date yet" };
+        return null; // no release date announced: nothing to remind about
       } catch (e) { return null; }
     }));
     return out.filter(Boolean).sort((a, b) => a.tier - b.tier || a.sort.localeCompare(b.sort));
