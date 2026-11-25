@@ -125,14 +125,12 @@
     const shared = tags.filter((t) => j(t) > 0.75 && tg(t) > 0.75).sort((a, b) => Math.min(j(b), tg(b)) - Math.min(j(a), tg(a))).slice(0, 4);
     const jOnly = tags.filter((t) => j(t) > 1 && tg(t) <= 0.75).sort((a, b) => j(b) - j(a)).slice(0, 3);
     const tOnly = tags.filter((t) => tg(t) > 1 && j(t) <= 0.75).sort((a, b) => tg(b) - tg(a)).slice(0, 3);
-    const neither = tags.filter((t) => j(t) < -0.5 && tg(t) < -0.5).slice(0, 3);
-    const parts = [];
-    if (shared.length) parts.push(`They both go for <b>${esc(listify(shared.map(TAG_LABEL)))}</b>.`);
-    if (jOnly.length) parts.push(`Jordan leans toward <b>${esc(listify(jOnly.map(TAG_LABEL)))}</b>`);
-    if (tOnly.length) parts.push(`${jOnly.length ? "while " : ""}Tegan leans toward <b>${esc(listify(tOnly.map(TAG_LABEL)))}</b>`);
-    let out = parts.length > 1 && jOnly.length && tOnly.length ? `${parts[0]} ${parts[1]}, ${parts[2]}.` : parts.map((x) => x.endsWith(".") ? x : x + ".").join(" ");
-    if (neither.length) out += ` Neither is into <b>${esc(listify(neither.map(TAG_LABEL)))}</b>.`;
-    out += ` Best bets mix ${esc(listify((shared.length ? shared : [...jOnly, ...tOnly]).slice(0, 2).map(TAG_LABEL)))} with a little of each kid's favorite.`;
+    // Just the best bet for both: the tastes they share, plus the top pick right now.
+    const bet = (shared.length ? shared : [...jOnly.slice(0, 1), ...tOnly.slice(0, 1)]).slice(0, 2).map(TAG_LABEL);
+    const top = suggestions("both")[0];
+    let out = bet.length ? `Best bet for both: <b>${esc(listify(bet))}</b>` : "Best bet for both: rate a few more to find out";
+    if (top) out += `, like <b>${esc(top.title)}</b>`;
+    out += ".";
     return out;
   }
   function learnedHtml(profileId) {
