@@ -156,3 +156,5 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .gremlins { padding-top: 24px; }
 .learned { color: var(--muted); font-size: 13px; margin: -4px 0 14px; }
 .learned b { color: var(--accent); font-weight: 600; }
+.synopsis { margin: 6px 0 0; font-size: 14px; max-width: 70ch; color: var(--ink); }
+.synopsis b { color: var(--accent); font-weight: 600; }

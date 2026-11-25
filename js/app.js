@@ -83,7 +83,36 @@
   }
 
   // Plain-English summary of what the picks have learned, shown in each tab.
-  const TAG_LABEL = (t) => t.replace(/-/g, " ").replace("sci fi", "sci-fi");
+  const TAG_NAMES = {
+    "video-game": "video-game movies", "kids-on-bikes": "kids-on-an-adventure stories", "creepy-dolls": "creepy dolls",
+    "killer-toys": "killer toys", "stop-motion": "stop-motion", "dark-fantasy": "dark fantasy", "haunted-house": "haunted houses",
+    "creepy-kids-book": "spooky book adaptations", "board-game": "board-game adventures", "sci-fi": "sci-fi", "creatures": "creature features",
+    "monster": "monsters", "ghost": "ghosts", "curse": "curses", "action": "action", "adventure": "adventure", "comedy": "comedy",
+    "horror": "horror", "aliens": "aliens", "dinosaurs": "dinosaurs", "robots": "robots", "survival": "survival stories",
+    "witches": "witches", "mummy": "mummies", "demons": "demons", "zombies": "zombies", "superhero": "superheroes", "animation": "animation",
+    "disney": "Disney", "netflix": "Netflix", "cartoon": "cartoons", "slasher": "slashers", "jungle": "jungle adventures", "musical": "musicals",
+  };
+  const TAG_LABEL = (t) => TAG_NAMES[t] || t.replace(/-/g, " ");
+  const listify = (a) => a.length < 2 ? a.join("") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+
+  // A short, plain-English synopsis of what the two kids like, from their ratings.
+  function bothSynopsis() {
+    const wJ = tagWeights("jordan"), wT = tagWeights("tegan");
+    const tags = [...new Set([...Object.keys(wJ), ...Object.keys(wT)])];
+    const j = (t) => wJ[t] || 0, tg = (t) => wT[t] || 0;
+    const shared = tags.filter((t) => j(t) > 0.75 && tg(t) > 0.75).sort((a, b) => Math.min(j(b), tg(b)) - Math.min(j(a), tg(a))).slice(0, 4);
+    const jOnly = tags.filter((t) => j(t) > 1 && tg(t) <= 0.75).sort((a, b) => j(b) - j(a)).slice(0, 3);
+    const tOnly = tags.filter((t) => tg(t) > 1 && j(t) <= 0.75).sort((a, b) => tg(b) - tg(a)).slice(0, 3);
+    const neither = tags.filter((t) => j(t) < -0.5 && tg(t) < -0.5).slice(0, 3);
+    const parts = [];
+    if (shared.length) parts.push(`They both go for <b>${esc(listify(shared.map(TAG_LABEL)))}</b>.`);
+    if (jOnly.length) parts.push(`Jordan leans toward <b>${esc(listify(jOnly.map(TAG_LABEL)))}</b>`);
+    if (tOnly.length) parts.push(`${jOnly.length ? "while " : ""}Tegan leans toward <b>${esc(listify(tOnly.map(TAG_LABEL)))}</b>`);
+    let out = parts.length > 1 && jOnly.length && tOnly.length ? `${parts[0]} ${parts[1]}, ${parts[2]}.` : parts.map((x) => x.endsWith(".") ? x : x + ".").join(" ");
+    if (neither.length) out += ` Neither is into <b>${esc(listify(neither.map(TAG_LABEL)))}</b>.`;
+    out += ` Best bets mix ${esc(listify((shared.length ? shared : [...jOnly, ...tOnly]).slice(0, 2).map(TAG_LABEL)))} with a little of each kid's favorite.`;
+    return out;
+  }
   function learnedHtml(profileId) {
     const members = PROFILES[profileId].combo || [profileId];
     const votes = members.reduce((n, pid) => n + state.watched[pid].length + (state.hidden[pid] || []).length, 0);
@@ -259,7 +288,7 @@
     return `
       <div class="panel-head">
         <div class="avatar">${p.icon ? `<img src="${p.icon}" alt="">` : p.emoji}</div>
-        <div><h3>${esc(p.name)}${p.age ? ` <small>age ${p.age}</small>` : ""}</h3><p class="blurb">${esc(p.blurb)}</p></div>
+        <div><h3>${esc(p.name)}${p.age ? ` <small>age ${p.age}</small>` : ""}</h3><p class="blurb">${esc(p.blurb)}</p>${profileId === "both" ? `<p class="synopsis">${bothSynopsis()}</p>` : ""}</div>
       </div>
       ${newRowsHtml(profileId)}
       ${watchedBlock}
