@@ -404,6 +404,7 @@
         <div><h3>${esc(p.name)}${p.age ? ` <small>age ${p.age}</small>` : ""}</h3><p class="blurb">${esc(p.blurb)}</p>${profileId === "both" ? `<p class="synopsis">${bothSynopsis()}</p>` : ""}</div>
       </div>
       ${learnedHtml(profileId)}
+      ${p.kid ? "" : `<div id="seasons-${profileId}" class="seasons" hidden></div>`}
       ${live ? `<h4 class="row-title">In theaters</h4>
       <div class="grid scroller" id="row-theaters-${profileId}"><p class="empty">Loading…</p></div>` : `<p class="setup-inline">Want what's in theaters and new on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`}
       <h4 class="row-title">Movies</h4>
@@ -461,24 +462,35 @@
     } catch (e) { /* hand-picked titles still show */ }
   }
 
-  // TV: new seasons of shows you liked (when there's a date), then new shows that fit.
-  async function loadTvSlot(profileId) {
-    const slot = document.getElementById(`slot-tv-${profileId}`);
-    if (!slot) return;
-    const seen = watchedSet(profileId), ok = notHidden(profileId);
+  // Its own row: new seasons of shows you liked, only when a release date is announced
+  // (highlighted when it's within a month or started in the last 30 days).
+  async function loadSeasonRow(profileId) {
+    const box = document.getElementById(`seasons-${profileId}`);
+    if (!box) return;
     const dedupe = new Set();
     const liked = (PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || [])
       .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
       .filter((w) => { const k = w.title.toLowerCase(); if (dedupe.has(k)) return false; dedupe.add(k); return true; });
+    if (!liked.length) { box.hidden = true; return; }
+    const items = await TMDB.seasonNews(liked).catch(() => []);
+    if (!box.isConnected) return;
+    if (!items.length) { box.hidden = true; box.innerHTML = ""; return; }
+    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
+      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
+    box.hidden = false;
+    fillPosters(box);
+  }
+
+  // TV: new shows that fit, ahead of the hand-picked ones.
+  async function loadTvSlot(profileId) {
+    const slot = document.getElementById(`slot-tv-${profileId}`);
+    if (!slot) return;
+    const seen = watchedSet(profileId), ok = notHidden(profileId);
     try {
-      const [seasons, fresh] = await Promise.all([
-        liked.length ? TMDB.seasonNews(liked).catch(() => []) : [],
-        LIVE[profileId].tv().catch(() => []),
-      ]);
+      const fresh = await LIVE[profileId].tv().catch(() => []);
       const f = tasteFilter(profileId, fresh.filter((m) => !seen.has(m.title.toLowerCase()) && ok(m)));
       if (!slot.isConnected) return;
-      slot.innerHTML = seasons.map((m) => card(m, profileId, { actions: false })).join("")
-        + (f.trained ? f.items : []).map((m) => card({ ...m, overview: "" }, profileId, { showDate: true })).join("");
+      slot.innerHTML = (f.trained ? f.items : []).map((m) => card({ ...m, overview: "" }, profileId, { showDate: true })).join("");
       if (slot.innerHTML) { const e = slot.parentElement.querySelector(".tv-empty"); if (e) e.remove(); }
       fillPosters(slot.parentElement);
     } catch (e) { /* hand-picked shows still show */ }
@@ -491,7 +503,7 @@
     // (instead of "Loading…" placeholders that change height), and keep scroll positions.
     const y = window.scrollY;
     const keep = new Map();
-    el.querySelectorAll("[id^='row-theaters-'], [id^='slot-']").forEach((n) => keep.set(n.id, { html: n.innerHTML, hidden: n.hidden }));
+    el.querySelectorAll("[id^='row-theaters-'], [id^='slot-'], [id^='seasons-']").forEach((n) => keep.set(n.id, { html: n.innerHTML, hidden: n.hidden }));
     const lefts = new Map([...el.querySelectorAll(".grid.scroller")].map((n, i) => [n.id || "i" + i, n.scrollLeft]));
     el.innerHTML = panelHtml(profileId);
     keep.forEach((v, id) => {
@@ -502,7 +514,7 @@
     el.querySelectorAll(".grid.scroller").forEach((n, i) => { const l = lefts.get(n.id || "i" + i); if (l) n.scrollLeft = l; });
     if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
     fillPosters(el);
-    if (TMDB.hasKey()) { loadTheaters(profileId); loadMovieSlot(profileId); loadTvSlot(profileId); }
+    if (TMDB.hasKey()) { loadSeasonRow(profileId); loadTheaters(profileId); loadMovieSlot(profileId); loadTvSlot(profileId); }
   }
 
   function renderSkipped() {
