@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" fill="#000"/>
+<!-- friendly T-rex head -->
+<path d="M44 150 C40 104 60 56 108 52 C146 50 168 70 166 96 C164 114 150 118 132 118 H112 C104 132 100 146 100 160Z" fill="#84cc16" stroke="#1a2e05" stroke-width="5" stroke-linejoin="round"/>
+<circle cx="120" cy="78" r="9" fill="#fff" stroke="#1a2e05" stroke-width="4"/><circle cx="122" cy="79" r="4" fill="#111"/>
+<path d="M112 104 H160" stroke="#1a2e05" stroke-width="4" stroke-linecap="round"/>
+<path d="M118 104 l4 7 l4-7 l4 7 l4-7 l4 7 l4-7 l4 7 l4-7" fill="#fff" stroke="#1a2e05" stroke-width="2" stroke-linejoin="round"/>
+<path d="M66 70 l8 -12 M80 60 l6 -13 M96 54 l4 -13" stroke="#4d7c0f" stroke-width="6" stroke-linecap="round"/>
+<circle cx="156" cy="88" r="3" fill="#1a2e05"/>
+</svg>

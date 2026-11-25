@@ -3,8 +3,8 @@
 
   // Profiles. `likes` nudges suggestions beyond the watch history.
   const PROFILES = {
-    jordan: { name: "Jordan", age: 9, emoji: "🦖", blurb: "Action, Disney, Netflix, video-game horror", likes: ["action", "disney", "netflix", "video-game"], kid: true },
-    tegan: { name: "Tegan", age: 7, emoji: "🧟", blurb: "Horror, creepy dolls, spooky stop-motion", likes: ["horror", "creepy-dolls"], kid: true },
+    jordan: { name: "Jordan", age: 9, emoji: "🦖", icon: "img/jordan.svg", blurb: "Action, Disney, Netflix, video-game horror", likes: ["action", "disney", "netflix", "video-game"], kid: true },
+    tegan: { name: "Tegan", age: 7, emoji: "🧟", icon: "img/tegan.svg", blurb: "Horror, creepy dolls, spooky stop-motion", likes: ["horror", "creepy-dolls"], kid: true },
     both: { name: "Both kids", icon: "img/gremlin.png", blurb: "Picks that work for Jordan and Tegan together", kid: true, combo: ["jordan", "tegan"] },
     kristine: { name: "Kristine", icon: "img/kristine.svg", blurb: "Just for you", likes: [] },
     date: { name: "Date Night", icon: "img/date-night.svg", blurb: "Kristine and Daniel", likes: [] },
@@ -218,8 +218,18 @@
     const mine = new Set(state.services.map(String));
     const ids = Object.fromEntries(TMDB.SERVICES.map((s) => [s.name, String(s.id)]));
     if (info.streaming && info.streaming.length) {
-      return `<div class="where">${info.streaming.map((n) =>
-        `<span class="svc${mine.has(ids[n]) ? " mine" : ""}">${esc(n)}</span>`).join("")}</div>`;
+      // Drop add-on channels ("Paramount+ Roku Premium Channel") and duplicates ("AMC Plus" vs "AMC+"),
+      // put your services first, and show at most two pills plus a "+N".
+      const norm = (n) => n.toLowerCase().replace(/\bplus\b/g, "+").replace(/[^a-z0-9+]/g, "");
+      const seen = new Set();
+      const list = info.streaming
+        .filter((n) => !/(channel|amazon channel|with ads)$/i.test(n))
+        .filter((n) => { const k = norm(n); if (seen.has(k)) return false; seen.add(k); return true; })
+        .sort((a, b) => (mine.has(ids[b]) ? 1 : 0) - (mine.has(ids[a]) ? 1 : 0));
+      const shown = (list.length ? list : info.streaming).slice(0, 2);
+      const extra = (list.length ? list : info.streaming).length - shown.length;
+      return `<div class="where">${shown.map((n) =>
+        `<span class="svc${mine.has(ids[n]) ? " mine" : ""}">${esc(n)}</span>`).join("")}${extra > 0 ? `<span class="svc more" title="${esc(list.slice(2).join(", "))}">+${extra}</span>` : ""}</div>`;
     }
     if (opts.context === "theaters") return `<div class="where muted">In theaters only</div>`;
     return `<div class="where muted">${info.rentBuy ? "Rent or buy" : "Not streaming yet"}</div>`;
