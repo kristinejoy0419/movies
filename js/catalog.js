@@ -95,6 +95,40 @@ window.CATALOG = [
   { title: "Anatomy of a Fall", year: 2023, rating: "R", tags: ["drama", "mystery", "thriller"], for: ["kristine"] },
   { title: "Barbie", year: 2023, rating: "PG-13", tags: ["comedy", "fantasy"], for: ["kristine"] },
 
+  // Kristine's own favorites (in her watched list) so their tags train the suggestions.
+  { title: "Off Campus", rating: "TV-MA", kind: "series", tags: ["romance", "college", "sports-romance", "book-adaptation", "drama", "comedy"], for: [] },
+  { title: "The Summer I Turned Pretty", year: 2022, rating: "TV-14", kind: "series", tags: ["romance", "teen", "coming-of-age", "love-triangle", "book-adaptation", "drama", "summer"], for: [] },
+  { title: "To All the Boys I've Loved Before", year: 2018, rating: "PG-13", tags: ["romance", "teen", "coming-of-age", "book-adaptation", "comedy"], for: [] },
+  { title: "Voicemails for Isabelle", rating: "PG-13", tags: ["romance", "comedy", "drama"], for: [] },
+
+  // Kristine: romance and coming-of-age
+  { title: "To All the Boys: P.S. I Still Love You", year: 2020, rating: "TV-14", tags: ["romance", "teen", "coming-of-age", "book-adaptation", "comedy"], for: ["kristine"] },
+  { title: "To All the Boys: Always and Forever", year: 2021, rating: "TV-14", tags: ["romance", "teen", "coming-of-age", "book-adaptation", "comedy"], for: ["kristine"] },
+  { title: "Red, White & Royal Blue", year: 2023, rating: "R", tags: ["romance", "comedy", "book-adaptation"], for: ["kristine"] },
+  { title: "Purple Hearts", year: 2022, rating: "TV-14", tags: ["romance", "drama", "book-adaptation"], for: ["kristine"] },
+  { title: "My Oxford Year", year: 2025, rating: "TV-14", tags: ["romance", "drama", "college", "book-adaptation"], for: ["kristine"] },
+  { title: "10 Things I Hate About You", year: 1999, rating: "PG-13", tags: ["romance", "teen", "comedy", "coming-of-age"], for: ["kristine", "date"] },
+  { title: "The Notebook", year: 2004, rating: "PG-13", tags: ["romance", "drama", "book-adaptation", "summer"], for: ["kristine"] },
+  { title: "Twilight", year: 2008, rating: "PG-13", tags: ["romance", "teen", "fantasy", "vampires", "love-triangle", "book-adaptation"], for: ["kristine"] },
+
+  // ---------- TV shows: Kristine ----------
+  { title: "XO, Kitty", year: 2023, rating: "TV-14", kind: "series", tags: ["romance", "teen", "coming-of-age", "comedy", "love-triangle"], for: ["kristine"], note: "Spin-off of To All the Boys." },
+  { title: "Bridgerton", year: 2020, rating: "TV-MA", kind: "series", tags: ["romance", "period", "drama", "book-adaptation"], for: ["kristine"] },
+  { title: "Heartstopper", year: 2022, rating: "TV-14", kind: "series", tags: ["romance", "teen", "coming-of-age", "book-adaptation"], for: ["kristine"] },
+  { title: "My Life with the Walter Boys", year: 2023, rating: "TV-14", kind: "series", tags: ["romance", "teen", "love-triangle", "book-adaptation", "drama"], for: ["kristine"] },
+  { title: "Maxton Hall: The World Between Us", year: 2024, rating: "TV-MA", kind: "series", tags: ["romance", "college", "drama", "book-adaptation"], for: ["kristine"] },
+  { title: "We Were Liars", year: 2025, rating: "TV-14", kind: "series", tags: ["teen", "mystery", "summer", "romance", "book-adaptation", "drama"], for: ["kristine"] },
+  { title: "Never Have I Ever", year: 2020, rating: "TV-14", kind: "series", tags: ["teen", "comedy", "romance", "coming-of-age", "love-triangle"], for: ["kristine"] },
+  { title: "Normal People", year: 2020, rating: "TV-MA", kind: "series", tags: ["romance", "drama", "college", "coming-of-age", "book-adaptation"], for: ["kristine"] },
+  { title: "Virgin River", year: 2019, rating: "TV-MA", kind: "series", tags: ["romance", "drama", "small-town", "book-adaptation"], for: ["kristine"] },
+  { title: "Ginny & Georgia", year: 2021, rating: "TV-14", kind: "series", tags: ["drama", "teen", "comedy", "romance", "mystery"], for: ["kristine"] },
+  { title: "Gilmore Girls", year: 2000, rating: "TV-PG", kind: "series", tags: ["comedy", "drama", "small-town", "romance", "coming-of-age"], for: ["kristine"] },
+  { title: "Outer Banks", year: 2020, rating: "TV-MA", kind: "series", tags: ["teen", "adventure", "mystery", "romance", "summer"], for: ["kristine"] },
+  { title: "Emily in Paris", year: 2020, rating: "TV-MA", kind: "series", tags: ["romance", "comedy", "love-triangle"], for: ["kristine"] },
+  { title: "Nobody Wants This", year: 2024, rating: "TV-MA", kind: "series", tags: ["romance", "comedy"], for: ["kristine", "date"] },
+  { title: "Only Murders in the Building", year: 2021, rating: "TV-MA", kind: "series", tags: ["mystery", "comedy", "whodunit"], for: ["kristine", "date"] },
+  { title: "Wednesday", year: 2022, rating: "TV-14", kind: "series", tags: ["mystery", "comedy", "horror", "teen"], for: ["kristine"] },
+
   // ---------- Date Night ----------
   { title: "Glass Onion: A Knives Out Mystery", year: 2022, rating: "PG-13", tags: ["mystery", "comedy", "whodunit"], for: ["date", "kristine"] },
   { title: "Top Gun: Maverick", year: 2022, rating: "PG-13", tags: ["action", "drama"], for: ["date"] },
@@ -108,6 +142,18 @@ window.CATALOG = [
   { title: "F1", year: 2025, rating: "PG-13", tags: ["action", "drama", "sports"], for: ["date"] },
   { title: "Crazy Rich Asians", year: 2018, rating: "PG-13", tags: ["comedy", "romance"], for: ["date", "kristine"] },
   { title: "Anyone But You", year: 2023, rating: "R", tags: ["comedy", "romance"], for: ["date"] },
+
+  // ---------- TV shows: Date Night ----------
+  { title: "The Bear", year: 2022, rating: "TV-MA", kind: "series", tags: ["comedy", "drama"], for: ["date"] },
+  { title: "Severance", year: 2022, rating: "TV-MA", kind: "series", tags: ["sci-fi", "mystery", "thriller"], for: ["date", "kristine"] },
+  { title: "The White Lotus", year: 2021, rating: "TV-MA", kind: "series", tags: ["drama", "comedy", "mystery"], for: ["date"] },
+  { title: "Slow Horses", year: 2022, rating: "TV-MA", kind: "series", tags: ["thriller", "action", "comedy", "spy"], for: ["date"] },
+  { title: "Ted Lasso", year: 2020, rating: "TV-MA", kind: "series", tags: ["comedy", "sports", "drama"], for: ["date"] },
+  { title: "Shrinking", year: 2023, rating: "TV-MA", kind: "series", tags: ["comedy", "drama"], for: ["date"] },
+  { title: "Reacher", year: 2022, rating: "TV-MA", kind: "series", tags: ["action", "thriller", "mystery"], for: ["date"] },
+  { title: "The Night Agent", year: 2023, rating: "TV-MA", kind: "series", tags: ["action", "thriller", "spy"], for: ["date"] },
+  { title: "Mr. & Mrs. Smith", year: 2024, rating: "TV-MA", kind: "series", tags: ["action", "romance", "comedy", "spy"], for: ["date"] },
+  { title: "Abbott Elementary", year: 2021, rating: "TV-PG", kind: "series", tags: ["comedy"], for: ["date"] },
   { title: "The Menu", year: 2022, rating: "R", tags: ["horror", "comedy", "thriller"], for: ["date", "kristine"] },
   { title: "Edge of Tomorrow", year: 2014, rating: "PG-13", tags: ["action", "sci-fi", "aliens"], for: ["date"] },
   { title: "Nope", year: 2022, rating: "R", tags: ["horror", "sci-fi", "aliens", "thriller"], for: ["date", "kristine"] },
@@ -137,6 +183,6 @@ window.SKIPPED_FOR_KIDS = [
 window.SEED_WATCHED = {
   jordan: ["Jumanji: Welcome to the Jungle", "Jumanji", "Five Nights at Freddy's", "Five Nights at Freddy's 2", "A Quiet Place", "A Quiet Place Part II", "A Quiet Place: Day One", ["The Mummy", 2026], "The Simpsons Movie", "Stranger Things"],
   tegan: ["Coraline", "The Witches", "Child's Play", "The Ring", "The Mummy", "Child's Play 2", "Annabelle: Creation", "A Quiet Place", "A Quiet Place Part II", "A Quiet Place: Day One", ["The Mummy", 2026]],
-  kristine: [],
+  kristine: ["Off Campus", "The Summer I Turned Pretty", "To All the Boys I've Loved Before", "Voicemails for Isabelle"],
   date: [],
 };

@@ -19,10 +19,12 @@
     kristine: [
       { title: "New in theaters", context: "theaters", fn: () => TMDB.inTheaters() },
       { title: "New on streaming", fn: () => TMDB.newByGenre({ services: state.services }) },
+      { title: "New TV episodes", fn: () => TMDB.newTv({ services: state.services }) },
     ],
     date: [
       { title: "New in theaters for date night", context: "theaters", fn: () => TMDB.inTheaters([G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi]) },
       { title: "New to stream together", fn: () => TMDB.newByGenre({ services: state.services, genres: [G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi] }) },
+      { title: "New TV to watch together", fn: () => TMDB.newTv({ services: state.services, genres: [G.comedy, G.drama, G.mystery, 10759, 10765, 80] }) },
     ],
   };
   const NEW_DAYS = 45; // NEW! sticker for anything released in the last 45 days
@@ -42,6 +44,20 @@
       const s = JSON.parse(localStorage.getItem(STORE));
       if (s && s.watched) {
         const merged = { ...defaultState(), ...s };
+        // Add seed titles added since this browser last loaded (once each, so deleting one sticks).
+        merged.seeded = merged.seeded || {};
+        for (const [pid, titles] of Object.entries(window.SEED_WATCHED)) {
+          const list = merged.watched[pid] = merged.watched[pid] || [];
+          const done = new Set(merged.seeded[pid] || (pid === "kristine" || pid === "date" ? [] : titles.map((t) => toWatched(t).title.toLowerCase())));
+          const adds = [];
+          for (const t of titles) {
+            const w = toWatched(t), k = w.title.toLowerCase();
+            if (!done.has(k) && !list.some((x) => x.title.toLowerCase() === k)) adds.push(w);
+            done.add(k);
+          }
+          list.unshift(...adds);
+          merged.seeded[pid] = [...done];
+        }
         if (!merged.tmdbKey) merged.tmdbKey = (window.MOVIE_NIGHT_CONFIG || {}).tmdbKey || ""; // built-in key fills in
         return merged;
       }
@@ -296,7 +312,10 @@
 
   function panelHtml(profileId) {
     const p = PROFILES[profileId];
-    const picks = suggestions(profileId).slice(0, 24);
+    const all = suggestions(profileId);
+    // Grown-up profiles get separate rows for movies and TV shows.
+    const picks = (p.kid ? all : all.filter((m) => m.kind !== "series")).slice(0, 24);
+    const shows = p.kid ? [] : all.filter((m) => m.kind === "series").slice(0, 24);
     const members = p.combo || [profileId];
     const addForm = `<form class="add-watched" data-profile="${profileId}">
         <input name="title" list="catalog-titles" placeholder="${p.combo ? "Something they both watched…" : "Add a movie or show you've watched…"}" autocomplete="off" required>
@@ -322,9 +341,11 @@
       </div>
       ${newRowsHtml(profileId)}
       ${watchedBlock}
-      <h4 class="row-title">Suggestions</h4>
+      <h4 class="row-title">${p.kid ? "Suggestions" : "Movie suggestions"}</h4>
       ${learnedHtml(profileId)}
       <div class="grid scroller">${picks.length ? picks.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen everything on the list! Add more to <code>js/catalog.js</code>.</p>`}</div>
+      ${p.kid ? "" : `<h4 class="row-title">Show suggestions</h4>
+      <div class="grid scroller">${shows.length ? shows.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen every show on the list!</p>`}</div>`}
       ${tmdbRow}`;
   }
 
