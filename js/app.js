@@ -64,7 +64,63 @@
     } catch (e) { /* storage blocked or empty */ }
     return defaultState();
   }
-  const save = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+  const saveLocal = () => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch (e) {} };
+  const save = () => { state.updatedAt = Date.now(); saveLocal(); queuePush(); };
+
+  // ---------- sync across devices ----------
+  // Ratings merge entry by entry: the newest vote for a title wins, removals are remembered,
+  // and "Not interested" picks are combined. Settings (key, services) follow the newest save.
+  const syncable = () => ({ watched: state.watched, hidden: state.hidden, hiddenTags: state.hiddenTags || {}, removed: state.removed || {},
+    services: state.services, updatedAt: state.updatedAt || 0 });
+  function mergeRemote(r) {
+    if (!r || !r.watched) return false;
+    const before = JSON.stringify(syncable());
+    const removed = {};
+    for (const src of [state.removed || {}, r.removed || {}]) for (const [pid, m] of Object.entries(src)) {
+      removed[pid] = removed[pid] || {};
+      for (const [k, t] of Object.entries(m)) removed[pid][k] = Math.max(removed[pid][k] || 0, t);
+    }
+    const watched = {};
+    for (const pid of new Set([...Object.keys(state.watched), ...Object.keys(r.watched)])) {
+      const byKey = new Map();
+      for (const w of [...(r.watched[pid] || []), ...(state.watched[pid] || [])]) {
+        const k = w.title.toLowerCase(), cur = byKey.get(k);
+        if (!cur || (w.at || 0) >= (cur.at || 0)) byKey.set(k, w);
+      }
+      watched[pid] = [...byKey.values()].filter((w) => !((removed[pid] || {})[w.title.toLowerCase()] > (w.at || 0)))
+        .sort((a, b) => (a.at || 0) - (b.at || 0));
+    }
+    const hidden = {};
+    for (const pid of new Set([...Object.keys(state.hidden), ...Object.keys(r.hidden || {})])) {
+      hidden[pid] = [...new Set([...(state.hidden[pid] || []), ...((r.hidden || {})[pid] || [])])];
+    }
+    state.watched = watched; state.hidden = hidden; state.removed = removed;
+    state.hiddenTags = { ...(r.hiddenTags || {}), ...(state.hiddenTags || {}) };
+    if ((r.updatedAt || 0) > (state.updatedAt || 0)) state.services = r.services || state.services;
+    state.updatedAt = Math.max(state.updatedAt || 0, r.updatedAt || 0);
+    saveLocal();
+    return JSON.stringify(syncable()) !== before;
+  }
+  let pushTimer = null, syncReady = false;
+  function queuePush() {
+    if (!syncReady || !window.MovieSync) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => MovieSync.push(syncable()).then(() => setSyncStatus("ok")).catch(() => setSyncStatus("err")), 800);
+  }
+  let syncStatus = "off";
+  function setSyncStatus(s) { syncStatus = s; const el = document.getElementById("sync-status"); if (el) el.textContent = syncLabel(); }
+  const syncLabel = () => ({ off: "Not synced yet", ok: "On: ratings sync across your devices", err: "Couldn't reach the sync service. Ratings are still saved on this device." }[syncStatus]);
+  async function syncNow() {
+    if (!window.MovieSync) return;
+    try {
+      const remote = await MovieSync.pull();
+      const changed = mergeRemote(remote);
+      syncReady = true;
+      await MovieSync.push(syncable());
+      setSyncStatus("ok");
+      if (changed) renderAll();
+    } catch (e) { syncReady = true; setSyncStatus("err"); }
+  }
   let state = load();
   TMDB.setKey(state.tmdbKey);
 
@@ -519,7 +575,7 @@
       addWatched(profile, entryFrom(c.m, b.dataset.vote));
     } else if (act === "flip") {
       const w = state.watched[profile][Number(b.dataset.i)];
-      w.vote = isYay(w) ? "nay" : "yay";
+      w.vote = isYay(w) ? "nay" : "yay"; w.at = Date.now();
       save(); renderAffected([profile]);
     } else if (act === "hide") {
       for (const pid of new Set([profile, ...(PROFILES[profile].combo || [])])) state.hidden[pid].push(key);
@@ -527,7 +583,9 @@
       if (c && !catalogItem(key)) (state.hiddenTags = state.hiddenTags || {})[key] = { tags: c.m.tags || [] };
       save(); renderAffected([profile]);
     } else if (act === "unwatch") {
-      state.watched[profile].splice(Number(b.dataset.i), 1); save(); renderAffected([profile]);
+      const [gone] = state.watched[profile].splice(Number(b.dataset.i), 1);
+      if (gone) ((state.removed = state.removed || {})[profile] = state.removed[profile] || {})[gone.title.toLowerCase()] = Date.now();
+      save(); renderAffected([profile]);
     } else if (act === "settings") {
       openSettings();
     }
@@ -540,7 +598,7 @@
       const list = state.watched[pid];
       const at = list.findIndex((w) => w.title.toLowerCase() === entry.title.toLowerCase());
       if (at >= 0) list.splice(at, 1);
-      list.push({ ...entry });
+      list.push({ ...entry, at: Date.now() });
     }
     save(); renderAffected(targets.concat(profile));
   }
@@ -582,6 +640,8 @@
     $("#tmdb-key").value = state.tmdbKey;
     $("#services").innerHTML = TMDB.SERVICES.map((s) =>
       `<label class="check"><input type="checkbox" value="${s.id}" ${state.services.includes(s.id) ? "checked" : ""}> ${s.name}</label>`).join("");
+    const st = $("#sync-status"); if (st) st.textContent = syncLabel();
+    const ln = $("#sync-link"); if (ln) ln.value = window.MovieSync ? MovieSync.link() : "";
     dlg.showModal();
   }
   $("#open-settings").addEventListener("click", openSettings);
@@ -614,4 +674,7 @@
   $("#catalog-titles").innerHTML = window.CATALOG.map((m) => `<option value="${esc(m.title)}">`).join("");
   renderSkipped();
   renderAll();
+  syncNow();
+  // Pick up changes from other devices when the app comes back to the front.
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) syncNow(); });
 })();

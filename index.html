@@ -83,6 +83,13 @@
         <legend>Streaming services you have</legend>
         <div id="services" class="services"></div>
       </fieldset>
+      <fieldset>
+        <legend>Sync</legend>
+        <p class="hint" id="sync-status">Not synced yet</p>
+        <label class="field">Link for another device (open it there once)
+          <input id="sync-link" readonly onclick="this.select()">
+        </label>
+      </fieldset>
       <div class="dialog-actions">
         <button id="reset" type="button" class="btn small ghost danger">Reset history</button>
         <span class="spacer"></span>
@@ -95,6 +102,7 @@
   <script src="js/config.js"></script>
   <script src="js/catalog.js"></script>
   <script src="js/tmdb.js"></script>
+  <script src="js/sync.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>
