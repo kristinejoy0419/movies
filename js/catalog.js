@@ -45,6 +45,7 @@ window.CATALOG = [
   { title: "Insidious", year: 2010, rating: "PG-13", tags: ["horror", "ghost", "demons", "haunted-house"], for: ["tegan"], note: "Lots of jump scares." },
   { title: "Mama", year: 2013, rating: "PG-13", tags: ["horror", "ghost", "creepy-kids"], for: ["tegan"], note: "Scary ghost, some violence." },
   { title: "Lights Out", year: 2016, rating: "PG-13", tags: ["horror", "ghost"], for: ["tegan"], note: "Short and punchy jump scares." },
+  { title: "The Mummy", year: 2026, rating: "R", tags: ["horror", "mummy", "curse", "demons", "creepy-kids"], for: [] },
   { title: "The Mummy Returns", year: 2001, rating: "PG-13", tags: ["action", "adventure", "horror", "mummy", "curse", "monster"], for: ["tegan", "jordan"], note: "Same vibe as The Mummy." },
   { title: "The Watcher in the Woods", year: 1980, rating: "PG", tags: ["horror", "ghost", "mystery", "disney"], for: ["tegan"], note: "Old-school Disney spooky." },
   { title: "Haunted Mansion", year: 2023, rating: "PG-13", tags: ["horror", "comedy", "ghost", "haunted-house", "disney"], for: ["tegan", "jordan"], note: "Spooky but silly." },
@@ -132,8 +133,8 @@ window.SKIPPED_FOR_KIDS = [
 
 // The kids' starting watch history, from Kristine's notes.
 window.SEED_WATCHED = {
-  jordan: ["Jumanji: Welcome to the Jungle", "Jumanji", "Five Nights at Freddy's", "Five Nights at Freddy's 2", "A Quiet Place", "The Simpsons Movie", "Stranger Things"],
-  tegan: ["Coraline", "The Witches", "Child's Play", "The Ring", "The Mummy", "Child's Play 2", "Annabelle: Creation"],
+  jordan: ["Jumanji: Welcome to the Jungle", "Jumanji", "Five Nights at Freddy's", "Five Nights at Freddy's 2", "A Quiet Place", "A Quiet Place Part II", "A Quiet Place: Day One", ["The Mummy", 2026], "The Simpsons Movie", "Stranger Things"],
+  tegan: ["Coraline", "The Witches", "Child's Play", "The Ring", "The Mummy", "Child's Play 2", "Annabelle: Creation", "A Quiet Place", "A Quiet Place Part II", "A Quiet Place: Day One", ["The Mummy", 2026]],
   kristine: [],
   date: [],
 };

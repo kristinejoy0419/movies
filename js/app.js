@@ -53,7 +53,9 @@
     return window.CATALOG.find((m) => m.title.toLowerCase() === t && (!year || m.year === year));
   }
   function toWatched(title) {
-    const m = findInCatalog(title);
+    let year;
+    if (Array.isArray(title)) [title, year] = title; // seed entries can pin a year: ["The Mummy", 2026]
+    const m = findInCatalog(title, year);
     return m ? { title: m.title, year: m.year, tags: m.tags, kind: m.kind, vote: "yay" } : { title, tags: [], vote: "yay" };
   }
   const entryFrom = (m, vote) => ({ title: m.title, year: m.year, tags: m.tags || [], kind: m.kind, tmdbId: m.tmdbId, mediaType: m.mediaType, vote });
