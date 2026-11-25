@@ -140,7 +140,7 @@
   }
 
   // Live TMDB lists: keep only movies that fit this profile's taste, best first.
-  // Until someone has rated anything there's nothing to go on, so we show a few popular ones.
+  // Until someone has rated anything there's nothing to go on, so we show nothing.
   const MIN_FIT = 0.6;
   function tasteFilter(profileId, items, limit = 14) {
     const members = PROFILES[profileId].combo || [profileId];
@@ -148,8 +148,9 @@
     const scored = items
       .map((m, i) => ({ m, i, score: members.reduce((s, pid) => s + scoreFor(pid, m), 0) / members.length }))
       .sort((a, b) => b.score - a.score || a.i - b.i);
-    if (!trained) return { items: scored.slice(0, 6).map((x) => x.m), trained };
-    return { items: scored.filter((x) => x.score >= MIN_FIT).slice(0, limit).map((x) => ({ ...x.m, because: x.m.because || becauseOf(members, x.m) })), trained };
+    if (!trained) return { items: [], trained };
+    // Must fit overall AND share something with a movie they gave a Yay.
+    return { items: scored.filter((x) => x.score >= MIN_FIT && becauseOf(members, x.m)).slice(0, limit).map((x) => ({ ...x.m, because: x.m.because || becauseOf(members, x.m) })), trained };
   }
 
   function becauseOf(profileIds, movie) {
@@ -333,10 +334,12 @@
         const { items, trained } = tasteFilter(profileId,
           (await row.fn()).filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m))));
         if (!box.isConnected) return;
-        box.innerHTML = (trained ? "" : `<p class="empty untrained">These are just popular for now. Rate a few movies with 👍/👎 and this row will only show ones that fit.</p>`)
-          + (items.length
+        if (!trained && !(box.previousElementSibling && box.previousElementSibling.classList.contains("untrained-note"))) {
+          box.insertAdjacentHTML("beforebegin", `<p class="untrained-note">Rate a few movies you've watched with 👍/👎 and new ones that fit will show up here.</p>`);
+        }
+        box.innerHTML = (items.length
             ? items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: row.context })).join("")
-            : `<p class="empty">Nothing new that fits right now. Check back soon.</p>`);
+            : `<p class="empty">${trained ? "Nothing new that fits right now. Check back soon." : ""}</p>`);
         fillPosters(box);
       } catch (e) {
         box.innerHTML = `<p class="empty">Couldn't load (${esc(e.message)}). Check your key in Settings.</p>`;

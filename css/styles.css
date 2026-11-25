@@ -59,13 +59,13 @@ nav a:hover { background: var(--accent-soft); }
 
 .row-title { font: 800 18px Inter, sans-serif; text-transform: uppercase; letter-spacing: .02em; margin: 24px 0 12px; }
 .row-title small { font: 400 13px Inter, sans-serif; color: var(--muted); }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 22px 18px; }
-.grid.scroller { grid-auto-flow: column; grid-auto-columns: 170px; grid-template-columns: none; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(128px, 1fr)); gap: 20px 14px; }
+.grid.scroller { grid-auto-flow: column; grid-auto-columns: 128px; grid-template-columns: none; overflow-x: auto; padding-bottom: 8px; scroll-snap-type: x proximity; }
 .grid.scroller .card { display: flex; flex-direction: column; min-width: 0; }
 .poster { width: 100%; aspect-ratio: 2 / 3; object-fit: cover; display: block; background: var(--surface); border-radius: var(--radius); box-shadow: var(--shadow); }
 .poster.placeholder { display: grid; place-items: center; padding: 12px; text-align: center; background: linear-gradient(160deg, hsl(var(--hue) 55% 38%), hsl(calc(var(--hue) + 40) 50% 18%)); color: #fff; font: 600 17px Fredoka, sans-serif; }
 .card-body { padding: 10px 2px 4px; display: flex; flex-direction: column; gap: 5px; flex: 1; }
-.card h4 { margin: 0; font: 700 16px/1.25 Inter, sans-serif; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card h4 { margin: 0; font: 700 14px/1.25 Inter, sans-serif; color: var(--ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .info { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 12px; color: var(--muted); }
 .cert { border: 1px solid var(--muted); color: var(--ink); border-radius: 4px; padding: 0 5px; font-weight: 600; font-size: 11px; line-height: 17px; }
 .cert.unrated { opacity: .6; }
@@ -107,8 +107,9 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .foot { color: var(--muted); font-size: 12px; padding: 32px 16px; }
 
 @media (max-width: 560px) {
-  .grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .grid.scroller { grid-auto-columns: 46%; }
+  .grid { gap: 10px; }
+  .grid.scroller { grid-auto-columns: 36%; }
+  .grid { grid-template-columns: repeat(3, 1fr); }
   .section-head h2 { font-size: 26px; }
   nav a { padding: 6px 8px; font-size: 13px; }
 }
@@ -158,6 +159,10 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .learned b { color: var(--accent); font-weight: 600; }
 .synopsis { margin: 6px 0 0; font-size: 14px; max-width: 70ch; color: var(--ink); }
 .synopsis b { color: var(--accent); font-weight: 600; }
-.grid.scroller .untrained { grid-column: 1 / -1; align-self: center; width: 220px; font-size: 13px; }
+.untrained-note { color: var(--muted); font-size: 13px; margin: -6px 0 10px; }
 .brand { display: flex; align-items: center; gap: 8px; }
 .brand img { width: 30px; height: 30px; }
+
+/* Smaller cards: tighter buttons */
+.card .actions .btn.small { padding: 4px 8px; }
+.new-sticker { font-size: 11px; padding: 6px 7px; }
