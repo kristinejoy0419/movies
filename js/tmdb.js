@@ -184,6 +184,26 @@ window.TMDB = (() => {
     return results.filter((_, i) => ok[i]);
   }
 
+  // TV shows with episodes airing lately (new shows and new seasons), skipping news, reality, talk, soaps and kids' TV.
+  async function newTv({ genres = [], services = null } = {}) {
+    const params = {
+      "air_date.gte": isoDaysAgo(45),
+      "air_date.lte": today(),
+      sort_by: "popularity.desc",
+      include_adult: "false",
+      "vote_count.gte": 10,
+      with_original_language: "en",
+      with_genres: genres.join("|"),
+      without_genres: "10763,10764,10767,10766,10762,99",
+    };
+    if (services) Object.assign(params, {
+      watch_region: REGION,
+      with_watch_monetization_types: "flatrate",
+      with_watch_providers: (services.length ? services : SERVICES.map((s) => s.id)).join("|"),
+    });
+    return list(await get("/discover/tv", params)).map((m) => ({ ...m, kind: "series" }));
+  }
+
   // In theaters now, optionally only certain genres.
   async function inTheaters(genres) {
     const data = await get("/movie/now_playing", { region: REGION });
@@ -194,5 +214,5 @@ window.TMDB = (() => {
   const recommendations = async (tmdbId, mediaType = "movie") =>
     list(await get(`/${mediaType}/${tmdbId}/recommendations`));
 
-  return { wikiPoster, setKey, hasKey, find, details, newByGenre, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
+  return { wikiPoster, setKey, hasKey, find, details, newByGenre, newTv, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
 })();
