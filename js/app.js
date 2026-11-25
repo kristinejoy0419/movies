@@ -273,7 +273,7 @@
         <h4>${esc(m.title)}</h4>
         ${infoLine(m, info, opts)}
         ${whereHtml(m, info, opts)}
-        ${m.seasonNote ? `<div class="season-note">🔔 ${esc(m.seasonNote)}</div>` : ""}
+        ${m.seasonNote ? `<div class="season-note${m.hot ? " hot" : ""}">${m.hot ? "🔔 " : ""}${esc(m.seasonNote)}</div>` : ""}
         ${m.because ? `<div class="because">Because you watched <b>${esc(m.because.title)}</b></div>` : ""}
         ${m.note ? `<div class="note">${esc(m.note)}</div>` : ""}
         ${m.overview ? `<div class="note overview">${esc(m.overview)}</div>` : ""}
@@ -363,12 +363,14 @@
     const shows = (PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || [])
       .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
       .filter((w) => { const k = w.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
-    if (!box || !shows.length) return;
-    const items = await TMDB.seasonNews(shows);
-    if (!box.isConnected || !items.length) return;
-    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
-      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
+    if (!box || !shows.length) return; // only shows up once you've liked a show
+    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4><div class="grid scroller"><p class="empty">Checking…</p></div>`;
     box.hidden = false;
+    const items = await TMDB.seasonNews(shows);
+    if (!box.isConnected) return;
+    box.querySelector(".grid").innerHTML = items.length
+      ? items.map((m) => card(m, profileId, { actions: false })).join("")
+      : `<p class="empty">No new seasons announced for the shows you liked.</p>`;
     fillPosters(box);
   }
 
