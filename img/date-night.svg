@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200"><circle cx="100" cy="100" r="100" fill="#000"/>
+<!-- two glasses clinking -->
+<g transform="rotate(-14 80 110)"><path d="M50 50 H100 C101 82 92 98 75 100 C58 98 49 82 50 50Z" fill="#fff" fill-opacity=".14" stroke="#f5f5f7" stroke-width="5" stroke-linejoin="round"/>
+<path d="M52 70 H98 C96 88 88 96 75 96 C62 96 54 88 52 70Z" fill="#b91c3c"/><path d="M75 100 V142 M58 144 H92" stroke="#f5f5f7" stroke-width="5" stroke-linecap="round"/></g>
+<g transform="rotate(14 120 110)"><path d="M100 50 H150 C151 82 142 98 125 100 C108 98 99 82 100 50Z" fill="#fff" fill-opacity=".14" stroke="#f5f5f7" stroke-width="5" stroke-linejoin="round"/>
+<path d="M102 70 H148 C146 88 138 96 125 96 C112 96 104 88 102 70Z" fill="#b91c3c"/><path d="M125 100 V142 M108 144 H142" stroke="#f5f5f7" stroke-width="5" stroke-linecap="round"/></g>
+<path d="M100 26 C96 18 84 20 86 30 C88 38 100 44 100 44 C100 44 112 38 114 30 C116 20 104 18 100 26Z" fill="#f43f5e"/>
+<path d="M92 48 l-6 -6 M100 46 v-8 M108 48 l6 -6" stroke="#ffd23f" stroke-width="3" stroke-linecap="round"/>
+</svg>
