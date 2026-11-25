@@ -221,6 +221,20 @@ window.TMDB = (() => {
         // Next season premiere: from the next episode, or a listed season dated in the future.
         let prem = next && next.episode_number === 1 && next.air_date ? { n: next.season_number, date: next.air_date } : null;
         if (!prem) { const f = seasons.find((x) => x.air_date && x.air_date > now); if (f) prem = { n: f.season_number, date: f.air_date }; }
+        // TMDB sometimes lists the new season before it has a date: check its first episode.
+        const lastN = last ? last.season_number : 0;
+        const upcoming = seasons.find((x) => x.season_number > lastN && !x.air_date);
+        if (!prem && upcoming) {
+          try {
+            const sd = await get(`/tv/${id}/season/${upcoming.season_number}`);
+            const ep = (sd.episodes || [])[0];
+            const date = (ep && ep.air_date) || sd.air_date;
+            if (date && date > now) prem = { n: upcoming.season_number, date };
+          } catch (e) { /* no season details yet */ }
+        }
+        // Dates we know about that TMDB hasn't caught up with yet.
+        const known = (window.SEASON_DATES || {})[(d.name || sh.title).toLowerCase()];
+        if (!prem && known && known.date > now && known.season > lastN) prem = { n: known.season, date: known.date };
         if (prem && prem.date <= isoDaysAgo(-aheadDays)) return { ...base, hot: true, tier: 0, sort: prem.date, seasonNote: `Season ${prem.n} premieres ${fmt(prem.date)}` };
         const cur = next || last;
         if (cur && cur.season_number > 1) {

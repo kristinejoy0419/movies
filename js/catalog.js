@@ -186,3 +186,8 @@ window.SEED_WATCHED = {
   kristine: ["Off Campus", "The Summer I Turned Pretty", "To All the Boys I've Loved Before", "Voicemails for Isabelle"],
   date: [],
 };
+
+// Announced season premieres TMDB may not have yet (title in lower case). Used only as a fallback.
+window.SEASON_DATES = {
+  "emily in paris": { season: 6, date: "2026-12-24" }, // final season, announced by Netflix
+};
