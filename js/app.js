@@ -462,7 +462,22 @@
   function renderPanel(profileId) {
     const el = document.getElementById(`panel-${profileId}`);
     if (!el) return;
+    // Keep the page still while it redraws: reuse the rows that load in the background
+    // (instead of "Loading…" placeholders that change height), and keep scroll positions.
+    const y = window.scrollY;
+    const keep = new Map();
+    el.querySelectorAll("[id^='new-'], [id^='tmdb-recs-'], [id^='seasons-']").forEach((n) => keep.set(n.id, { html: n.innerHTML, hidden: n.hidden }));
+    const notes = new Set([...el.querySelectorAll(".untrained-note")].map((n) => n.nextElementSibling && n.nextElementSibling.id));
+    const lefts = new Map([...el.querySelectorAll(".grid.scroller")].map((n, i) => [n.id || "i" + i, n.scrollLeft]));
     el.innerHTML = panelHtml(profileId);
+    keep.forEach((v, id) => {
+      const n = document.getElementById(id);
+      if (!n) return;
+      n.innerHTML = v.html; n.hidden = v.hidden;
+      if (notes.has(id)) n.insertAdjacentHTML("beforebegin", `<p class="untrained-note">Rate a few movies you've watched with 👍/👎 and new ones that fit will show up here.</p>`);
+    });
+    el.querySelectorAll(".grid.scroller").forEach((n, i) => { const l = lefts.get(n.id || "i" + i); if (l) n.scrollLeft = l; });
+    if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
     fillPosters(el);
     loadNewRows(profileId);
     loadSeasonNews(profileId);
