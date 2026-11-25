@@ -159,3 +159,5 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
 .synopsis { margin: 6px 0 0; font-size: 14px; max-width: 70ch; color: var(--ink); }
 .synopsis b { color: var(--accent); font-weight: 600; }
 .grid.scroller .untrained { grid-column: 1 / -1; align-self: center; width: 220px; font-size: 13px; }
+.brand { display: flex; align-items: center; gap: 8px; }
+.brand img { width: 30px; height: 30px; }
