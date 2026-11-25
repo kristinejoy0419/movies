@@ -83,6 +83,7 @@ window.TMDB = (() => {
       date: r.release_date || r.first_air_date || "",
       score: r.vote_count >= 20 ? Math.round(r.vote_average * 10) / 10 : null,
       tags: [...new Set((r.genre_ids || []).map((g) => GENRE_TAGS[g]).filter(Boolean))],
+      genreIds: r.genre_ids || [],
     };
   }
 
@@ -155,11 +156,16 @@ window.TMDB = (() => {
   // Also no suicide, self-harm or Santa spoilers for the kids.
   const SELF_HARM = /\b(santa claus myth|no santa|santa (is|isn't) real|suicid\w*|self[- ]?harm|self[- ]?mutilation|cutting|overdose|hanging|jumping to death|kamikaze)\b/i;
   const KID_BLOCKED_TITLES = new Set(["buddy", "godzilla minus zero"]); // Minus Zero: sequel to Minus One (kamikaze / suicide themes)
-  async function isKidSafe(id) {
-    if (!clean.has(id)) {
-      clean.set(id, get(`/movie/${id}/keywords`).then((d) => !(d.keywords || []).some((k) => SEXUAL.test(k.name) || SELF_HARM.test(k.name))).catch(() => false));
+  async function isKidSafe(id, media = "movie") {
+    const k = media + id;
+    if (!clean.has(k)) {
+      clean.set(k, get(`/${media}/${id}/keywords`).then((d) => !(d.keywords || d.results || []).some((x) => SEXUAL.test(x.name) || SELF_HARM.test(x.name))).catch(() => false));
     }
-    return clean.get(id);
+    return clean.get(k);
+  }
+  async function kidFilter(list) {
+    const ok = await Promise.all(list.map((m) => !KID_BLOCKED_TITLES.has(m.title.toLowerCase()) && !(m.genreIds || []).includes(ROMANCE) && isKidSafe(m.tmdbId, m.mediaType)));
+    return list.filter((_, i) => ok[i]);
   }
 
   // New releases filtered by genre. kids=true screens out sexual content (any rating).
@@ -185,7 +191,7 @@ window.TMDB = (() => {
   }
 
   // TV shows with episodes airing lately (new shows and new seasons), skipping news, reality, talk, soaps and kids' TV.
-  async function newTv({ genres = [], services = null } = {}) {
+  async function newTv({ genres = [], services = null, kids = false } = {}) {
     const params = {
       "air_date.gte": isoDaysAgo(45),
       "air_date.lte": today(),
@@ -201,7 +207,8 @@ window.TMDB = (() => {
       with_watch_monetization_types: "flatrate",
       with_watch_providers: (services.length ? services : SERVICES.map((s) => s.id)).join("|"),
     });
-    return list(await get("/discover/tv", params)).map((m) => ({ ...m, kind: "series" }));
+    const out = list(await get("/discover/tv", params)).map((m) => ({ ...m, kind: "series" }));
+    return kids ? kidFilter(out) : out;
   }
 
   // New-season news for shows you liked: a season premiering within a month (a reminder), or one that just started.
@@ -250,10 +257,11 @@ window.TMDB = (() => {
   }
 
   // In theaters now, optionally only certain genres.
-  async function inTheaters(genres) {
+  async function inTheaters(genres, { kids = false } = {}) {
     const data = await get("/movie/now_playing", { region: REGION });
     const keep = genres && genres.length ? new Set(genres) : null;
-    return data.results.filter((r) => !r.adult && (!keep || (r.genre_ids || []).some((g) => keep.has(g)))).map(normalize);
+    const list = data.results.filter((r) => !r.adult && (!keep || (r.genre_ids || []).some((g) => keep.has(g)))).map(normalize);
+    return kids ? kidFilter(list) : list;
   }
 
   const recommendations = async (tmdbId, mediaType = "movie") =>

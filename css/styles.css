@@ -204,3 +204,4 @@ nav .tab-icon { width: 30px; height: 30px; vertical-align: -9px; margin-right: 2
 }
 .season-note { color: var(--muted); font-weight: 600; }
 .season-note.hot { color: #ffd23f; font-weight: 700; }
+.async-slot { display: contents; }

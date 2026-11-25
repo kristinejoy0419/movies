@@ -10,22 +10,25 @@
     date: { name: "Date Night", icon: "img/date-night.svg", blurb: "Kristine and Daniel", likes: [] },
   };
 
-  // "New" rows shown at the top of each tab (need a TMDB key). Genre ids are TMDB's.
+  // Each tab has three rows: In theaters, Movies, TV. Live TMDB titles (new releases, "more like")
+  // join the Movies and TV rows ahead of the hand-picked ones; NEW! stickers mark the new ones.
+  // Genre ids are TMDB's.
   const G = { action: 28, adventure: 12, animation: 16, comedy: 35, family: 10751, fantasy: 14, horror: 27, mystery: 9648, romance: 10749, scifi: 878, thriller: 53, drama: 18 };
-  const NEW_ROWS = {
-    both: [{ title: "New for the Gremlins", note: "any rating, screened for sexual content and suicide", fn: () => TMDB.newByGenre({ kids: true }) }],
-    jordan: [{ title: "New for Jordan", note: "any rating, screened for sexual content and suicide", fn: () => TMDB.newByGenre({ kids: true, genres: [G.action, G.adventure, G.animation, G.scifi, G.fantasy] }) }],
-    tegan: [{ title: "New for Tegan", note: "any rating, screened for sexual content and suicide", fn: () => TMDB.newByGenre({ kids: true, genres: [G.horror, G.fantasy, G.mystery, G.animation] }) }],
-    kristine: [
-      { title: "New in theaters", context: "theaters", fn: () => TMDB.inTheaters() },
-      { title: "New on streaming", fn: () => TMDB.newByGenre({ services: state.services }) },
-      { title: "New TV episodes", fn: () => TMDB.newTv({ services: state.services }) },
-    ],
-    date: [
-      { title: "New in theaters for date night", context: "theaters", fn: () => TMDB.inTheaters([G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi]) },
-      { title: "New to stream together", fn: () => TMDB.newByGenre({ services: state.services, genres: [G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi] }) },
-      { title: "New TV to watch together", fn: () => TMDB.newTv({ services: state.services, genres: [G.comedy, G.drama, G.mystery, 10759, 10765, 80] }) },
-    ],
+  const TVG = { animation: 16, comedy: 35, drama: 18, mystery: 9648, family: 10751, actionAdventure: 10759, scifiFantasy: 10765, crime: 80 };
+  const LIVE = {
+    both: { theaters: () => TMDB.inTheaters(null, { kids: true }), movies: () => TMDB.newByGenre({ kids: true }),
+      tv: () => TMDB.newTv({ kids: true, genres: [TVG.animation, TVG.scifiFantasy, TVG.actionAdventure, TVG.mystery] }) },
+    jordan: { theaters: () => TMDB.inTheaters([G.action, G.adventure, G.animation, G.scifi, G.fantasy, G.horror], { kids: true }),
+      movies: () => TMDB.newByGenre({ kids: true, genres: [G.action, G.adventure, G.animation, G.scifi, G.fantasy] }),
+      tv: () => TMDB.newTv({ kids: true, genres: [TVG.animation, TVG.actionAdventure, TVG.scifiFantasy] }) },
+    tegan: { theaters: () => TMDB.inTheaters([G.horror, G.fantasy, G.mystery, G.animation], { kids: true }),
+      movies: () => TMDB.newByGenre({ kids: true, genres: [G.horror, G.fantasy, G.mystery, G.animation] }),
+      tv: () => TMDB.newTv({ kids: true, genres: [TVG.mystery, TVG.scifiFantasy, TVG.animation] }) },
+    kristine: { theaters: () => TMDB.inTheaters(), movies: () => TMDB.newByGenre({ services: state.services }),
+      tv: () => TMDB.newTv({ services: state.services }) },
+    date: { theaters: () => TMDB.inTheaters([G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi]),
+      movies: () => TMDB.newByGenre({ services: state.services, genres: [G.comedy, G.action, G.romance, G.thriller, G.mystery, G.scifi] }),
+      tv: () => TMDB.newTv({ services: state.services, genres: [TVG.comedy, TVG.drama, TVG.mystery, TVG.actionAdventure, TVG.scifiFantasy, TVG.crime] }) },
   };
   const NEW_DAYS = 45; // NEW! sticker for anything released in the last 45 days
 
@@ -377,9 +380,8 @@
     const p = PROFILES[profileId];
     const all = suggestions(profileId);
     // Grown-up profiles get separate rows for movies and TV shows.
-    const picks = (p.kid ? all : all.filter((m) => m.kind !== "series")).slice(0, 24);
-    const shows = p.kid ? [] : all.filter((m) => m.kind === "series").slice(0, 24);
-    const members = p.combo || [profileId];
+    const movies = all.filter((m) => m.kind !== "series").slice(0, 24);
+    const shows = all.filter((m) => m.kind === "series").slice(0, 24);
     const addForm = `<form class="add-watched" data-profile="${profileId}">
         <input name="title" list="catalog-titles" placeholder="${p.combo ? "Something they both watched…" : "Add a movie or show you've watched…"}" autocomplete="off" required>
         <button class="btn small yay" name="vote" value="yay">👍 Yay</button>
@@ -395,68 +397,91 @@
             ${watchedHtml(profileId)}
           </details>
         </div>`;
-    const tmdbRow = !p.kid && TMDB.hasKey() && state.watched[profileId].some((w) => w.tmdbId && isYay(w))
-      ? `<h4 class="row-title">More like your recent watches</h4><div class="grid scroller" id="tmdb-recs-${profileId}"><p class="empty">Loading…</p></div>` : "";
+    const live = TMDB.hasKey();
     return `
       <div class="panel-head">
         <div class="avatar">${p.icon ? `<img src="${p.icon}" alt="">` : p.emoji}</div>
         <div><h3>${esc(p.name)}${p.age ? ` <small>age ${p.age}</small>` : ""}</h3><p class="blurb">${esc(p.blurb)}</p>${profileId === "both" ? `<p class="synopsis">${bothSynopsis()}</p>` : ""}</div>
       </div>
-      <div id="seasons-${profileId}" class="seasons" hidden></div>
-      ${newRowsHtml(profileId)}
-      ${watchedBlock}
-      <h4 class="row-title">${p.kid ? "Suggestions" : "Movie suggestions"}</h4>
       ${learnedHtml(profileId)}
-      <div class="grid scroller">${picks.length ? picks.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen everything on the list! Add more to <code>js/catalog.js</code>.</p>`}</div>
-      ${p.kid ? "" : `<h4 class="row-title">Show suggestions</h4>
-      <div class="grid scroller">${shows.length ? shows.map((m) => card(m, profileId)).join("") : `<p class="empty">You've seen every show on the list!</p>`}</div>`}
-      ${tmdbRow}`;
+      ${live ? `<h4 class="row-title">In theaters</h4>
+      <div class="grid scroller" id="row-theaters-${profileId}"><p class="empty">Loading…</p></div>` : `<p class="setup-inline">Want what's in theaters and new on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`}
+      <h4 class="row-title">Movies</h4>
+      <div class="grid scroller"><span class="async-slot" id="slot-movies-${profileId}"></span>${movies.map((m) => card(m, profileId)).join("")}</div>
+      <h4 class="row-title">TV</h4>
+      <div class="grid scroller"><span class="async-slot" id="slot-tv-${profileId}"></span>${shows.map((m) => card(m, profileId)).join("")}${shows.length ? "" : `<p class="empty tv-empty">Rate a show or two and picks will show up here.</p>`}</div>
+      ${watchedBlock}`;
   }
 
-  function newRowsHtml(profileId) {
-    if (!TMDB.hasKey()) return `<p class="setup-inline">🆕 Want to see what's new in theaters and on streaming here? Add a free TMDB key in <button class="linklike" data-act="settings">Settings</button>.</p>`;
-    return NEW_ROWS[profileId].map((r, i) => `<h4 class="row-title new-title">${esc(r.title)}</h4>
-      <div class="grid scroller" id="new-${profileId}-${i}"><p class="empty">Loading…</p></div>`).join("");
+  // ---------- live rows ----------
+  const watchedSet = (profileId) => new Set((PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || []).map((w) => w.title.toLowerCase()));
+  const notHidden = (profileId) => { const h = new Set(state.hidden[profileId] || []); return (m) => !h.has(keyOf(m)); };
+
+  async function loadTheaters(profileId) {
+    const box = document.getElementById(`row-theaters-${profileId}`);
+    if (!box) return;
+    try {
+      const seen = watchedSet(profileId), ok = notHidden(profileId);
+      const raw = (await LIVE[profileId].theaters()).filter((m) => !seen.has(m.title.toLowerCase()) && ok(m));
+      const { items, trained } = tasteFilter(profileId, raw);
+      const show = trained && items.length ? items : raw; // nothing rated yet: show what's playing
+      if (!box.isConnected) return;
+      box.innerHTML = show.length
+        ? show.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: "theaters" })).join("")
+        : `<p class="empty">Nothing in theaters that fits right now.</p>`;
+      fillPosters(box);
+    } catch (e) {
+      box.innerHTML = `<p class="empty">Couldn't load (${esc(e.message)}).</p>`;
+    }
   }
 
-  // New seasons of shows this profile rated Yay: coming soon, or just started.
-  async function loadSeasonNews(profileId) {
-    if (!TMDB.hasKey()) return;
-    const box = document.getElementById(`seasons-${profileId}`);
-    const seen = new Set();
-    const shows = (PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || [])
-      .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
-      .filter((w) => { const k = w.title.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
-    if (!box || !shows.length) return; // only shows up once you've liked a show
-    const items = await TMDB.seasonNews(shows);
-    if (!box.isConnected || !items.length) return; // only when a season has a release date
-    box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
-      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
-    box.hidden = false;
-    fillPosters(box);
-  }
-
-  async function loadNewRows(profileId) {
-    if (!TMDB.hasKey()) return;
-    const watched = new Set((PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid]).map((w) => w.title.toLowerCase()));
-    const hidden = new Set(state.hidden[profileId]);
-    NEW_ROWS[profileId].forEach(async (row, i) => {
-      const box = document.getElementById(`new-${profileId}-${i}`);
-      try {
-        const { items, trained } = tasteFilter(profileId,
-          (await row.fn()).filter((m) => !watched.has(m.title.toLowerCase()) && !hidden.has(keyOf(m))));
-        if (!box.isConnected) return;
-        if (!trained && !(box.previousElementSibling && box.previousElementSibling.classList.contains("untrained-note"))) {
-          box.insertAdjacentHTML("beforebegin", `<p class="untrained-note">Rate a few movies you've watched with 👍/👎 and new ones that fit will show up here.</p>`);
+  // New movies on streaming that fit, plus "more like" your recent Yays, ahead of the hand-picked ones.
+  async function loadMovieSlot(profileId) {
+    const slot = document.getElementById(`slot-movies-${profileId}`);
+    if (!slot) return;
+    const p = PROFILES[profileId], seen = watchedSet(profileId), ok = notHidden(profileId);
+    try {
+      const fresh = tasteFilter(profileId, (await LIVE[profileId].movies().catch(() => []))
+        .filter((m) => !seen.has(m.title.toLowerCase()) && ok(m)));
+      let recs = [];
+      if (!p.kid) {
+        const recent = state.watched[profileId].filter((w) => w.tmdbId && isYay(w) && w.mediaType !== "tv").slice(-3);
+        const lists = await Promise.all(recent.map((w) => TMDB.recommendations(w.tmdbId, w.mediaType).then((rs) => rs.map((r) => ({ ...r, because: w }))).catch(() => [])));
+        const used = new Set();
+        for (let i = 0; i < 20; i++) for (const l of lists) {
+          const r = l[i];
+          if (r && !used.has(r.title) && !seen.has(r.title.toLowerCase()) && ok(r)) { used.add(r.title); recs.push(r); }
         }
-        box.innerHTML = (items.length
-            ? items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: true, context: row.context })).join("")
-            : `<p class="empty">${trained ? "Nothing new that fits right now. Check back soon." : ""}</p>`);
-        fillPosters(box);
-      } catch (e) {
-        box.innerHTML = `<p class="empty">Couldn't load (${esc(e.message)}). Check your key in Settings.</p>`;
+        recs = tasteFilter(profileId, recs, 8).items;
       }
-    });
+      const items = [...(fresh.trained ? fresh.items : []), ...recs];
+      if (!slot.isConnected) return;
+      slot.innerHTML = items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: isNew(m, {}), hide: !m.because })).join("");
+      fillPosters(slot.parentElement);
+    } catch (e) { /* hand-picked titles still show */ }
+  }
+
+  // TV: new seasons of shows you liked (when there's a date), then new shows that fit.
+  async function loadTvSlot(profileId) {
+    const slot = document.getElementById(`slot-tv-${profileId}`);
+    if (!slot) return;
+    const seen = watchedSet(profileId), ok = notHidden(profileId);
+    const dedupe = new Set();
+    const liked = (PROFILES[profileId].combo || [profileId]).flatMap((pid) => state.watched[pid] || [])
+      .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
+      .filter((w) => { const k = w.title.toLowerCase(); if (dedupe.has(k)) return false; dedupe.add(k); return true; });
+    try {
+      const [seasons, fresh] = await Promise.all([
+        liked.length ? TMDB.seasonNews(liked).catch(() => []) : [],
+        LIVE[profileId].tv().catch(() => []),
+      ]);
+      const f = tasteFilter(profileId, fresh.filter((m) => !seen.has(m.title.toLowerCase()) && ok(m)));
+      if (!slot.isConnected) return;
+      slot.innerHTML = seasons.map((m) => card(m, profileId, { actions: false })).join("")
+        + (f.trained ? f.items : []).map((m) => card({ ...m, overview: "" }, profileId, { showDate: true })).join("");
+      if (slot.innerHTML) { const e = slot.parentElement.querySelector(".tv-empty"); if (e) e.remove(); }
+      fillPosters(slot.parentElement);
+    } catch (e) { /* hand-picked shows still show */ }
   }
 
   function renderPanel(profileId) {
@@ -466,22 +491,18 @@
     // (instead of "Loading…" placeholders that change height), and keep scroll positions.
     const y = window.scrollY;
     const keep = new Map();
-    el.querySelectorAll("[id^='new-'], [id^='tmdb-recs-'], [id^='seasons-']").forEach((n) => keep.set(n.id, { html: n.innerHTML, hidden: n.hidden }));
-    const notes = new Set([...el.querySelectorAll(".untrained-note")].map((n) => n.nextElementSibling && n.nextElementSibling.id));
+    el.querySelectorAll("[id^='row-theaters-'], [id^='slot-']").forEach((n) => keep.set(n.id, { html: n.innerHTML, hidden: n.hidden }));
     const lefts = new Map([...el.querySelectorAll(".grid.scroller")].map((n, i) => [n.id || "i" + i, n.scrollLeft]));
     el.innerHTML = panelHtml(profileId);
     keep.forEach((v, id) => {
       const n = document.getElementById(id);
       if (!n) return;
       n.innerHTML = v.html; n.hidden = v.hidden;
-      if (notes.has(id)) n.insertAdjacentHTML("beforebegin", `<p class="untrained-note">Rate a few movies you've watched with 👍/👎 and new ones that fit will show up here.</p>`);
     });
     el.querySelectorAll(".grid.scroller").forEach((n, i) => { const l = lefts.get(n.id || "i" + i); if (l) n.scrollLeft = l; });
     if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
     fillPosters(el);
-    loadNewRows(profileId);
-    loadSeasonNews(profileId);
-    if (!PROFILES[profileId].kid) loadTmdbRecs(profileId);
+    if (TMDB.hasKey()) { loadTheaters(profileId); loadMovieSlot(profileId); loadTvSlot(profileId); }
   }
 
   function renderSkipped() {
@@ -560,26 +581,6 @@
       }
     };
     await Promise.all([worker(), worker(), worker(), worker()]);
-  }
-
-  async function loadTmdbRecs(profileId) {
-    const box = document.getElementById(`tmdb-recs-${profileId}`);
-    if (!box) return;
-    const recent = state.watched[profileId].filter((w) => w.tmdbId && isYay(w)).slice(-3);
-    const seen = new Set(state.watched[profileId].map((w) => w.title.toLowerCase()));
-    try {
-      const lists = await Promise.all(recent.map((w) => TMDB.recommendations(w.tmdbId, w.mediaType).then((rs) => rs.map((r) => ({ ...r, because: w })))));
-      const out = [], used = new Set();
-      for (let i = 0; i < 20; i++) for (const l of lists) {
-        const r = l[i];
-        if (r && !used.has(r.title) && !seen.has(r.title.toLowerCase()) && !(state.hidden[profileId] || []).includes(keyOf(r))) { used.add(r.title); out.push(r); }
-      }
-      out.splice(0, out.length, ...tasteFilter(profileId, out, 8).items);
-      box.innerHTML = out.length ? out.map((m) => card({ ...m, overview: "" }, profileId, { hide: false })).join("") : `<p class="empty">Nothing else that fits right now.</p>`;
-      fillPosters(box);
-    } catch (e) {
-      box.innerHTML = `<p class="empty">Couldn't reach TMDB (${esc(e.message)}).</p>`;
-    }
   }
 
   const fmtDate = (d) => new Date(d + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
