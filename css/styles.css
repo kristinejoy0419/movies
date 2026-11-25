@@ -155,7 +155,6 @@ legend { font-weight: 600; font-size: 14px; padding: 0 4px; }
   box-shadow: 0 3px 10px rgb(0 0 0 / .45);
 }
 .grid.scroller { padding-top: 10px; }
-.new-title::before { content: "🆕 "; }
 .setup-inline { color: var(--muted); font-size: 13px; background: var(--surface); border: 1px dashed var(--line); border-radius: var(--radius); padding: 10px 14px; margin: 4px 0 12px; }
 
 /* Gremlin icon sits in a black circle. */
