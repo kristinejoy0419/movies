@@ -462,7 +462,7 @@
       }
       const items = [...(fresh.trained ? fresh.items : []), ...recs];
       if (!slot.isConnected) return;
-      slot.innerHTML = items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: isNew(m, {}), hide: !m.because })).join("");
+      slot.innerHTML = items.map((m) => card({ ...m, overview: "" }, profileId, { showDate: isNew(m, {}) })).join("");
       fillPosters(slot.parentElement);
     } catch (e) { /* hand-picked titles still show */ }
   }
