@@ -74,6 +74,8 @@ nav a:hover { background: var(--accent-soft); }
 .cert { border: 1px solid var(--muted); color: var(--ink); border-radius: 4px; padding: 0 5px; font-weight: 600; font-size: 11px; line-height: 17px; }
 .cert.unrated { opacity: .6; }
 .score { color: var(--gold); font-weight: 600; }
+.score.rt { color: #ff6b5b; }
+.score.rt.rotten { color: #8bc34a; }
 .where { display: flex; flex-wrap: wrap; gap: 4px; font-size: 11px; }
 .where.muted { color: var(--muted); }
 .svc { background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--ink); }

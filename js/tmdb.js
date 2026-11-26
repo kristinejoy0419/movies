@@ -116,7 +116,7 @@ window.TMDB = (() => {
   async function details(tmdbId, mediaType = "movie") {
     const isTv = mediaType === "tv";
     const d = await get(`/${mediaType}/${tmdbId}`, {
-      append_to_response: (isTv ? "content_ratings" : "release_dates") + ",watch/providers",
+      append_to_response: (isTv ? "content_ratings" : "release_dates") + ",watch/providers,external_ids",
     });
     let rating = "";
     if (isTv) {
@@ -132,6 +132,8 @@ window.TMDB = (() => {
       mediaType,
       rating,
       score: d.vote_count >= 20 ? Math.round(d.vote_average * 10) / 10 : null,
+      rt: await rottenTomatoes(d.external_ids?.wikidata_id),
+      rtChecked: true,
       poster: d.poster_path ? IMG + "w342" + d.poster_path : "",
       streaming: names(wp.flatrate).concat(names(wp.free), names(wp.ads)).filter((v, i, a) => a.indexOf(v) === i).slice(0, 4),
       providerIds: (wp.flatrate || []).map((p) => p.provider_id),
@@ -141,6 +143,31 @@ window.TMDB = (() => {
       fetched: Date.now(),
     };
   }
+  // Rotten Tomatoes critics score (0-100), or null when there isn't one. RT has no open API, so this
+  // reads the score Wikidata keeps for the title (updated from RT), or else the score quoted in the
+  // English Wikipedia article ("On Rotten Tomatoes, the film holds an approval rating of 91%...").
+  const WIKI_UA = { "Api-User-Agent": "MovieNightFamilySite/1.0" };
+  async function rottenTomatoes(wikidataId) {
+    if (!wikidataId) return null;
+    try {
+      const e = (await (await fetch(`https://www.wikidata.org/w/api.php?action=wbgetentities&ids=${wikidataId}&props=sitelinks|claims&sitefilter=enwiki&format=json&origin=*`, { headers: WIKI_UA })).json()).entities[wikidataId] || {};
+      const rt = (e.claims?.P444 || []).filter((c) => (c.qualifiers?.P447 || []).some((q) => q.datavalue?.value?.id === "Q105584"))
+        .map((c) => ({ v: parseInt(c.mainsnak?.datavalue?.value, 10), t: c.qualifiers?.P585?.[0]?.datavalue?.value?.time || "" }))
+        .filter((x) => Number.isFinite(x.v) && x.v <= 100).sort((x, y) => (y.t > x.t ? 1 : -1));
+      if (rt.length) return rt[0].v;
+      const title = e.sitelinks?.enwiki?.title;
+      if (!title) return null;
+      const w = (await (await fetch(`https://en.wikipedia.org/w/api.php?action=parse&prop=wikitext&format=json&formatversion=2&origin=*&page=${encodeURIComponent(title)}`, { headers: WIKI_UA })).json()).parse?.wikitext || "";
+      const re = /Rotten Tomatoes/g;
+      let m;
+      while ((m = re.exec(w))) {
+        const hit = w.slice(m.index + 15, m.index + 415).match(/\{\{\s*Rotten Tomatoes prose\s*\|\s*(\d{1,3})\b|\b(\d{1,3}) ?(?:%|percent)/);
+        if (hit) { const n = +(hit[1] || hit[2]); if (n <= 100) return n; }
+      }
+      return null;
+    } catch (err) { return null; }
+  }
+
   // "Netflix Standard with Ads" -> "Netflix", "Amazon Prime Video" -> "Prime Video", etc.
   function cleanProvider(n) {
     return n.replace(/ (Standard )?with Ads$/i, "").replace(/ Amazon Channel$/i, "").replace(/ Apple TV Channel$/i, "")
@@ -267,5 +294,5 @@ window.TMDB = (() => {
   const recommendations = async (tmdbId, mediaType = "movie") =>
     list(await get(`/${mediaType}/${tmdbId}/recommendations`));
 
-  return { wikiPoster, setKey, hasKey, find, details, newByGenre, newTv, seasonNews, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
+  return { wikiPoster, rottenTomatoes, setKey, hasKey, find, details, newByGenre, newTv, seasonNews, inTheaters, nowPlaying, newOnStreaming, newForKids, recommendations, SERVICES };
 })();

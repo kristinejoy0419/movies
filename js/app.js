@@ -279,13 +279,17 @@
     return `<div class="poster-wrap"><div class="poster placeholder" style="--hue:${hue}"><span>${esc(m.title)}</span></div>${sticker}</div>`;
   }
 
-  // "PG-13  ★ 7.4  2019"
+  // "PG-13  🍅 93%  2019" (Rotten Tomatoes critics score; 🤢 when it's rotten, under 60%)
   function infoLine(m, info, opts) {
     const rating = m.rating || info.rating;
-    const score = info.score ?? m.score;
     const bits = [];
     bits.push(`<span class="cert${rating ? "" : " unrated"}">${esc(rating || "NR")}</span>`);
-    if (score) bits.push(`<span class="score">★ ${score.toFixed(1)}</span>`);
+    if (info.rtChecked) {
+      if (info.rt != null) bits.push(`<span class="score rt${info.rt < 60 ? " rotten" : ""}" title="Rotten Tomatoes critics score">${info.rt < 60 ? "🤢" : "🍅"} ${info.rt}%</span>`);
+    } else {
+      const score = info.score ?? m.score;
+      if (score) bits.push(`<span class="score">★ ${score.toFixed(1)}</span>`);
+    }
     if (opts.showDate && m.date) bits.push(`<span>${esc(fmtDate(m.date))}</span>`);
     else if (m.year) bits.push(`<span>${m.year}</span>`);
     if (m.kind === "series" || m.mediaType === "tv") bits.push(`<span>Series</span>`);
@@ -578,7 +582,7 @@
       const c = cardRegistry.get(el.dataset.card);
       if (!c) return false;
       const info = infoFor(c.m);
-      if (live) return !(info.fetched && Date.now() - info.fetched < INFO_TTL);
+      if (live) return !(info.fetched && Date.now() - info.fetched < INFO_TTL && info.rtChecked);
       return !info.poster && !c.m.poster && !(info.wikiFetched && Date.now() - info.wikiFetched < INFO_TTL);
     });
     const lookupFn = live ? lookup : lookupWiki;
