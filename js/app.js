@@ -202,7 +202,7 @@
   }
   function learnedHtml(profileId) {
     const members = PROFILES[profileId].combo || [profileId];
-    const votes = members.reduce((n, pid) => n + state.watched[pid].length + (state.hidden[pid] || []).length, 0);
+    const votes = members.reduce((n, pid) => n + state.watched[pid].length + (state.hidden[pid] || []).filter((k) => !k.startsWith("season|")).length, 0);
     if (!votes) return "";
     const w = {};
     for (const pid of members) for (const [t, v] of Object.entries(tagWeights(pid))) w[t] = (w[t] || 0) + v;
@@ -355,6 +355,7 @@
           <button class="btn small nay" data-act="vote" data-vote="nay" data-profile="${profileId}" title="Watched it, didn't like it">👎 Nay</button>
           ${opts.hide !== false ? `<button class="linklike skip" data-act="hide" data-profile="${profileId}" data-key="${esc(keyOf(m))}">Not interested</button>` : ""}
         </div>` : ""}
+        ${opts.seasonKey ? `<div class="actions"><button class="linklike skip" data-act="hide" data-profile="${profileId}" data-key="${esc(opts.seasonKey)}">Not interested</button></div>` : ""}
       </div>
     </article>`;
   }
@@ -468,6 +469,8 @@
 
   // Its own row: new seasons of shows you liked, only when a release date is announced
   // (highlighted when it's within a month or started in the last 30 days).
+  // "Not interested" on a season reminder hides that season only; it doesn't count against the show.
+  const seasonKey = (m) => `season|${m.title.toLowerCase()}|${((m.seasonNote || "").match(/Season \d+/) || [""])[0]}`;
   async function loadSeasonRow(profileId) {
     const box = document.getElementById(`seasons-${profileId}`);
     if (!box) return;
@@ -476,11 +479,12 @@
       .filter((w) => isYay(w) && (w.kind === "series" || w.mediaType === "tv"))
       .filter((w) => { const k = w.title.toLowerCase(); if (dedupe.has(k)) return false; dedupe.add(k); return true; });
     if (!liked.length) { box.hidden = true; return; }
-    const items = await TMDB.seasonNews(liked).catch(() => []);
+    const hiddenKeys = new Set(state.hidden[profileId] || []);
+    const items = (await TMDB.seasonNews(liked).catch(() => [])).filter((m) => !hiddenKeys.has(seasonKey(m)));
     if (!box.isConnected) return;
     if (!items.length) { box.hidden = true; box.innerHTML = ""; return; }
     box.innerHTML = `<h4 class="row-title">🔔 New seasons of shows you liked</h4>
-      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false })).join("")}</div>`;
+      <div class="grid scroller">${items.map((m) => card(m, profileId, { actions: false, seasonKey: seasonKey(m) })).join("")}</div>`;
     box.hidden = false;
     fillPosters(box);
   }
@@ -618,7 +622,8 @@
     } else if (act === "hide") {
       for (const pid of new Set([profile, ...(PROFILES[profile].combo || [])])) state.hidden[pid].push(key);
       const c = cardRegistry.get((b.closest("[data-card]") || {}).dataset?.card);
-      if (c && !catalogItem(key)) (state.hiddenTags = state.hiddenTags || {})[key] = { tags: c.m.tags || [] };
+      const cardEl = b.closest(".card"); if (cardEl) cardEl.remove();
+      if (c && !key.startsWith("season|") && !catalogItem(key)) (state.hiddenTags = state.hiddenTags || {})[key] = { tags: c.m.tags || [] };
       save(); renderAffected([profile]);
     } else if (act === "unwatch") {
       const [gone] = state.watched[profile].splice(Number(b.dataset.i), 1);
